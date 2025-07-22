@@ -2,39 +2,60 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Tunisia Casting Design System - Elegant entertainment industry colors */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Base colors - warm neutrals */
+    --background: 30 5% 98%;
+    --foreground: 340 15% 12%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    /* Card colors */
+    --card: 30 5% 99%;
+    --card-foreground: 340 15% 12%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    /* Popover colors */
+    --popover: 30 5% 99%;
+    --popover-foreground: 340 15% 12%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary - Deep burgundy/wine */
+    --primary: 340 65% 25%;
+    --primary-foreground: 30 5% 98%;
+    --primary-glow: 340 75% 35%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary - Warm gold */
+    --secondary: 45 85% 65%;
+    --secondary-foreground: 340 15% 12%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Muted colors */
+    --muted: 30 8% 92%;
+    --muted-foreground: 340 8% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Accent - Rich gold */
+    --accent: 45 90% 55%;
+    --accent-foreground: 340 15% 12%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 30 5% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Border and input */
+    --border: 30 12% 88%;
+    --input: 30 12% 90%;
+    --ring: 340 65% 25%;
+
+    /* Custom gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(340 65% 25%), hsl(340 75% 35%), hsl(45 85% 65%));
+    --gradient-card: linear-gradient(180deg, hsl(30 5% 99%), hsl(30 8% 96%));
+    --gradient-accent: linear-gradient(135deg, hsl(45 90% 55%), hsl(45 85% 65%));
+    
+    /* Shadows */
+    --shadow-elegant: 0 10px 30px -10px hsl(340 65% 25% / 0.3);
+    --shadow-glow: 0 0 40px hsl(340 75% 35% / 0.4);
+    --shadow-card: 0 4px 20px -5px hsl(340 15% 12% / 0.1);
+
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     --radius: 0.5rem;
 
