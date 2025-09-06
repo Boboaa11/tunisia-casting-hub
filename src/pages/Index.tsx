@@ -47,7 +47,7 @@ const Index = () => {
         <div className="relative z-10 text-center text-white px-4 max-w-4xl mx-auto animate-fade-in">
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
             Your Stage Awaits in 
-            <span className="bg-gradient-accent bg-clip-text text-transparent block">
+            <span className="text-secondary block">
               Tunisia
             </span>
           </h1>
@@ -58,7 +58,7 @@ const Index = () => {
             <Button variant="hero" size="lg" asChild className="text-lg px-8 py-6">
               <Link to="/signup">Start Your Journey</Link>
             </Button>
-            <Button variant="outline" size="lg" asChild className="text-lg px-8 py-6 bg-white/10 border-white text-white hover:bg-white hover:text-primary">
+            <Button variant="outline" size="lg" asChild className="text-lg px-8 py-6 border-white text-white bg-white/10 hover:bg-white hover:text-primary">
               <Link to="/castings">Browse Castings</Link>
             </Button>
           </div>
