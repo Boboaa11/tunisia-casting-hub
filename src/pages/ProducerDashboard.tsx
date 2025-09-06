@@ -6,35 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Eye, Edit, Trash2, Calendar, MapPin, Users } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useCasting } from "@/contexts/CastingContext";
 
 const ProducerDashboard = () => {
-  // Simulation de castings créés par le producteur
-  const [castings] = useState([
-    {
-      id: 1,
-      title: "Recherche Acteur Principal",
-      production: "Film Tunisien 2024",
-      type: "Cinéma",
-      location: "Tunis",
-      deadline: "2024-02-15",
-      status: "Actif",
-      applications: 24,
-      views: 156,
-      createdAt: "2024-01-15"
-    },
-    {
-      id: 2,
-      title: "Figuration Série TV",
-      production: "Série Ramadan",
-      type: "Télévision",
-      location: "Sousse",
-      deadline: "2024-02-20",
-      status: "Brouillon",
-      applications: 0,
-      views: 0,
-      createdAt: "2024-01-20"
-    }
-  ]);
+  const { castings, deleteCasting } = useCasting();
+  
+  // Filter for producer castings (those with status field)
+  const producerCastings = castings.filter(casting => casting.status);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -79,7 +57,7 @@ const ProducerDashboard = () => {
                 <Eye className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">2</div>
+                <div className="text-2xl font-bold">{producerCastings.length}</div>
                 <p className="text-xs text-muted-foreground">
                   +1 ce mois-ci
                 </p>
@@ -92,7 +70,7 @@ const ProducerDashboard = () => {
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">24</div>
+                <div className="text-2xl font-bold">{producerCastings.reduce((total, casting) => total + (casting.applications || 0), 0)}</div>
                 <p className="text-xs text-muted-foreground">
                   +12 cette semaine
                 </p>
@@ -105,7 +83,7 @@ const ProducerDashboard = () => {
                 <Eye className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">156</div>
+                <div className="text-2xl font-bold">{producerCastings.reduce((total, casting) => total + (casting.views || 0), 0)}</div>
                 <p className="text-xs text-muted-foreground">
                   +45 cette semaine
                 </p>
@@ -118,9 +96,9 @@ const ProducerDashboard = () => {
                 <Calendar className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">1</div>
+                <div className="text-2xl font-bold">{producerCastings.filter(c => c.status === "Actif").length}</div>
                 <p className="text-xs text-muted-foreground">
-                  1 en brouillon
+                  {producerCastings.filter(c => c.status === "Brouillon").length} en brouillon
                 </p>
               </CardContent>
             </Card>
@@ -136,7 +114,7 @@ const ProducerDashboard = () => {
 
             <TabsContent value="castings" className="space-y-6">
               <div className="grid gap-6">
-                {castings.map((casting) => (
+                {producerCastings.map((casting) => (
                   <Card key={casting.id} className="hover:shadow-lg transition-shadow">
                     <CardHeader>
                       <div className="flex justify-between items-start">
@@ -181,7 +159,12 @@ const ProducerDashboard = () => {
                             <Edit className="w-4 h-4 mr-1" />
                             Modifier
                           </Button>
-                          <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => deleteCasting(casting.id)}
+                          >
                             <Trash2 className="w-4 h-4 mr-1" />
                             Supprimer
                           </Button>

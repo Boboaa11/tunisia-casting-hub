@@ -5,61 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, MapPin, Calendar, Clock, Film, Tv, Theater } from "lucide-react";
 import Layout from "@/components/Layout";
+import { useCasting } from "@/contexts/CastingContext";
 
 const Castings = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-
-  const castings = [
-    {
-      id: 1,
-      title: "Lead Role - Historical Drama Series",
-      production: "Carthage Productions",
-      type: "TV Series",
-      category: "tv",
-      location: "Tunis",
-      deadline: "2024-08-15",
-      description: "Seeking male actor, 25-35 years old, for lead role in historical drama series about ancient Carthage.",
-      requirements: ["Professional acting experience", "Fluent in Arabic and French", "Available for 6 months"],
-      compensation: "Professional rate"
-    },
-    {
-      id: 2,
-      title: "Supporting Actress - Romantic Comedy",
-      production: "Sidi Bou Said Films",
-      type: "Feature Film",
-      category: "film",
-      location: "Sidi Bou Said",
-      deadline: "2024-08-20",
-      description: "Looking for talented actress, 20-30 years old, for supporting role in romantic comedy.",
-      requirements: ["Acting experience preferred", "Comfortable with comedy", "Available for 2 months"],
-      compensation: "Competitive pay"
-    },
-    {
-      id: 3,
-      title: "Ensemble Cast - Modern Theater",
-      production: "National Theater of Tunisia",
-      type: "Theater",
-      category: "theater",
-      location: "Tunis",
-      deadline: "2024-08-25",
-      description: "Multiple roles available for contemporary theater production exploring modern Tunisian society.",
-      requirements: ["Theater experience required", "Strong stage presence", "Available for rehearsals"],
-      compensation: "Theater standard"
-    },
-    {
-      id: 4,
-      title: "Commercial Models - Fashion Brand",
-      production: "Medina Fashion House",
-      type: "Commercial",
-      category: "commercial",
-      location: "Sousse",
-      deadline: "2024-08-10",
-      description: "Seeking diverse models for upcoming fashion campaign featuring traditional and modern styles.",
-      requirements: ["Modeling experience", "Height 170cm+", "Professional portfolio"],
-      compensation: "Day rate + usage"
-    }
-  ];
+  const { castings } = useCasting();
 
   const categories = [
     { id: "all", label: "All Categories", icon: null },

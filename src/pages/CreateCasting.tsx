@@ -11,10 +11,12 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Save, Send, Plus, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useCasting } from "@/contexts/CastingContext";
 
 const CreateCasting = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { addCasting } = useCasting();
   
   const [formData, setFormData] = useState({
     title: "",
@@ -90,6 +92,31 @@ const CreateCasting = () => {
       });
       return;
     }
+
+    // Create the casting object
+    const newCasting = {
+      title: formData.title,
+      production: formData.production,
+      type: formData.type,
+      category: formData.type.toLowerCase().replace('é', 'e'),
+      location: formData.location,
+      deadline: formData.deadline,
+      description: formData.description,
+      requirements: formData.requirements.split('\n').filter(req => req.trim()),
+      compensation: formData.compensation,
+      status: "Actif",
+      applications: 0,
+      views: 0,
+      createdAt: new Date().toISOString().split('T')[0],
+      ageMin: formData.ageMin,
+      ageMax: formData.ageMax,
+      gender: formData.gender,
+      experience: formData.experience,
+      languages: formData.languages,
+      specialSkills: formData.specialSkills
+    };
+
+    addCasting(newCasting);
 
     toast({
       title: "Casting publié",

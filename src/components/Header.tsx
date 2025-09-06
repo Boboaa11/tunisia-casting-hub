@@ -53,6 +53,9 @@ const Header = () => {
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4">
             <Button variant="outline" asChild>
+              <Link to="/producer-dashboard">Producer Portal</Link>
+            </Button>
+            <Button variant="outline" asChild>
               <Link to="/login">Login</Link>
             </Button>
             <Button variant="hero" asChild>
@@ -89,6 +92,9 @@ const Header = () => {
                 </Link>
               ))}
               <div className="flex flex-col space-y-2 pt-3 border-t border-border">
+                <Button variant="outline" asChild>
+                  <Link to="/producer-dashboard" onClick={() => setIsMenuOpen(false)}>Producer Portal</Link>
+                </Button>
                 <Button variant="outline" asChild>
                   <Link to="/login" onClick={() => setIsMenuOpen(false)}>Login</Link>
                 </Button>

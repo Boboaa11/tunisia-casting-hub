@@ -61,6 +61,9 @@ const Index = () => {
             <Button variant="outline" size="lg" asChild className="text-lg px-8 py-6 border-white text-white bg-white/10 hover:bg-white hover:text-primary">
               <Link to="/castings">Browse Castings</Link>
             </Button>
+            <Button variant="outline" size="lg" asChild className="text-lg px-8 py-6 border-white text-white bg-white/10 hover:bg-white hover:text-primary">
+              <Link to="/producer-dashboard">Post a Casting</Link>
+            </Button>
           </div>
         </div>
       </section>
