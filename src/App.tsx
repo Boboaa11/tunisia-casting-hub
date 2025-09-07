@@ -14,6 +14,11 @@ import SignUp from "./pages/SignUp";
 import NotFound from "./pages/NotFound";
 import ProducerDashboard from "./pages/ProducerDashboard";
 import CreateCasting from "./pages/CreateCasting";
+import MyApplications from "./pages/MyApplications";
+import Messages from "./pages/Messages";
+import Profile from "./pages/Profile";
+import TalentSearch from "./pages/TalentSearch";
+import Billing from "./pages/Billing";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +39,11 @@ const App = () => (
             <Route path="/signup" element={<SignUp />} />
             <Route path="/producer-dashboard" element={<ProducerDashboard />} />
             <Route path="/create-casting" element={<CreateCasting />} />
+            <Route path="/my-applications" element={<MyApplications />} />
+            <Route path="/messages" element={<Messages />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/talent-search" element={<TalentSearch />} />
+            <Route path="/billing" element={<Billing />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
