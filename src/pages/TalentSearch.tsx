@@ -102,10 +102,10 @@ const TalentSearch = () => {
   const filteredTalents = talents.filter(talent => {
     const matchesSearch = talent.name.toLowerCase().includes(filters.search.toLowerCase()) ||
                          talent.bio.toLowerCase().includes(filters.search.toLowerCase());
-    const matchesType = !filters.talentType || talent.talentType === filters.talentType;
-    const matchesCity = !filters.city || talent.city === filters.city;
+    const matchesType = !filters.talentType || filters.talentType === "all" || talent.talentType === filters.talentType;
+    const matchesCity = !filters.city || filters.city === "all" || talent.city === filters.city;
     const matchesAge = talent.age >= filters.ageRange[0] && talent.age <= filters.ageRange[1];
-    const matchesExperience = !filters.experience || talent.experience === filters.experience;
+    const matchesExperience = !filters.experience || filters.experience === "all" || talent.experience === filters.experience;
     const matchesAvailability = !filters.availability || talent.availability === "Disponible";
 
     return matchesSearch && matchesType && matchesCity && matchesAge && matchesExperience && matchesAvailability;
@@ -160,7 +160,7 @@ const TalentSearch = () => {
                     <SelectValue placeholder="Tous les types" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Tous les types</SelectItem>
+                    <SelectItem value="all">Tous les types</SelectItem>
                     <SelectItem value="Acteur">Acteur</SelectItem>
                     <SelectItem value="Actrice">Actrice</SelectItem>
                     <SelectItem value="Mannequin">Mannequin</SelectItem>
@@ -179,7 +179,7 @@ const TalentSearch = () => {
                     <SelectValue placeholder="Toutes les villes" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Toutes les villes</SelectItem>
+                    <SelectItem value="all">Toutes les villes</SelectItem>
                     <SelectItem value="Tunis">Tunis</SelectItem>
                     <SelectItem value="Sfax">Sfax</SelectItem>
                     <SelectItem value="Sousse">Sousse</SelectItem>
@@ -210,7 +210,7 @@ const TalentSearch = () => {
                     <SelectValue placeholder="Tous niveaux" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Tous niveaux</SelectItem>
+                    <SelectItem value="all">Tous niveaux</SelectItem>
                     <SelectItem value="Débutant">Débutant</SelectItem>
                     <SelectItem value="Intermédiaire">Intermédiaire</SelectItem>
                     <SelectItem value="Expérimenté">Expérimenté</SelectItem>
@@ -234,10 +234,10 @@ const TalentSearch = () => {
                 className="w-full"
                 onClick={() => setFilters({
                   search: "",
-                  talentType: "",
-                  city: "",
+                  talentType: "all",
+                  city: "all",
                   ageRange: [18, 50],
-                  experience: "",
+                  experience: "all",
                   gender: "",
                   availability: false
                 })}
