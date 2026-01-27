@@ -1,23 +1,49 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, Star } from "lucide-react";
+import { Eye, EyeOff, Star, AlertCircle } from "lucide-react";
 import Layout from "@/components/Layout";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { login, isAuthenticated, redirectAfterAuth, user } = useAuth();
+  const { toast } = useToast();
+  
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: ""
   });
 
+  const showLoginMessage = searchParams.get('message') === 'login_required';
+  const castingId = searchParams.get('castingId');
+
+  // Redirect after successful login
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      if (user.role === 'talent' && !user.hasSubscription && castingId) {
+        navigate(`/subscription?message=subscription_required&castingId=${castingId}`);
+      } else if (redirectAfterAuth) {
+        navigate(redirectAfterAuth);
+      } else {
+        navigate('/castings');
+      }
+    }
+  }, [isAuthenticated, user, navigate, redirectAfterAuth, castingId]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log("Login attempted with:", formData);
+    login(formData.email, formData.password, 'talent');
+    toast({
+      title: "Connexion réussie !",
+      description: "Bienvenue sur Tunisia Casting.",
+    });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,6 +57,20 @@ const Login = () => {
     <Layout>
       <div className="min-h-screen bg-gradient-card flex items-center justify-center py-12 px-4">
         <div className="max-w-md w-full space-y-8 animate-fade-in">
+          {/* Login Required Message */}
+          {showLoginMessage && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-amber-800 font-medium">Compte Talent requis</p>
+                <p className="text-amber-700 text-sm mt-1">
+                  Pour postuler à ce casting, veuillez vous connecter ou créer un compte Talent. 
+                  Vous serez automatiquement redirigé après l'authentification.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Header */}
           <div className="text-center">
             <div className="flex justify-center mb-4">
@@ -38,21 +78,21 @@ const Login = () => {
                 <Star className="h-8 w-8 text-primary-foreground" />
               </div>
             </div>
-            <h1 className="text-3xl font-bold text-foreground">Welcome Back</h1>
+            <h1 className="text-3xl font-bold text-foreground">Bienvenue</h1>
             <p className="text-muted-foreground mt-2">
-              Sign in to your Tunisia Casting account
+              Connectez-vous à votre compte Tunisia Casting
             </p>
           </div>
 
           {/* Login Form */}
           <Card className="shadow-elegant bg-card">
             <CardHeader>
-              <CardTitle className="text-2xl text-center text-foreground">Sign In</CardTitle>
+              <CardTitle className="text-2xl text-center text-foreground">Connexion</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-foreground">Email Address</Label>
+                  <Label htmlFor="email" className="text-foreground">Adresse email</Label>
                   <Input
                     id="email"
                     name="email"
@@ -60,13 +100,13 @@ const Login = () => {
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    placeholder="Enter your email"
+                    placeholder="Entrez votre email"
                     className="shadow-card"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-foreground">Password</Label>
+                  <Label htmlFor="password" className="text-foreground">Mot de passe</Label>
                   <div className="relative">
                     <Input
                       id="password"
@@ -75,7 +115,7 @@ const Login = () => {
                       required
                       value={formData.password}
                       onChange={handleChange}
-                      placeholder="Enter your password"
+                      placeholder="Entrez votre mot de passe"
                       className="shadow-card pr-10"
                     />
                     <button
@@ -101,7 +141,7 @@ const Login = () => {
                       className="h-4 w-4 text-primary focus:ring-primary border-border rounded"
                     />
                     <Label htmlFor="remember-me" className="ml-2 text-sm text-muted-foreground">
-                      Remember me
+                      Se souvenir de moi
                     </Label>
                   </div>
 
@@ -109,12 +149,12 @@ const Login = () => {
                     to="/forgot-password"
                     className="text-sm text-primary hover:text-primary-glow transition-colors"
                   >
-                    Forgot password?
+                    Mot de passe oublié ?
                   </Link>
                 </div>
 
                 <Button type="submit" variant="hero" className="w-full">
-                  Sign In
+                  Se connecter
                 </Button>
               </form>
 
@@ -124,7 +164,7 @@ const Login = () => {
                     <div className="w-full border-t border-border" />
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-card text-muted-foreground">Or continue with</span>
+                    <span className="px-2 bg-card text-muted-foreground">Ou continuer avec</span>
                   </div>
                 </div>
 
@@ -149,12 +189,12 @@ const Login = () => {
 
               <div className="mt-6 text-center">
                 <p className="text-sm text-muted-foreground">
-                  Don't have an account?{" "}
+                  Vous n'avez pas de compte ?{" "}
                   <Link
-                    to="/signup"
+                    to={`/signup${castingId ? `?castingId=${castingId}` : ''}`}
                     className="text-primary hover:text-primary-glow font-medium transition-colors"
                   >
-                    Sign up here
+                    Inscrivez-vous ici
                   </Link>
                 </p>
               </div>

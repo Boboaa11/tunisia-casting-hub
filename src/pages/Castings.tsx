@@ -1,16 +1,39 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, MapPin, Calendar, Clock, Film, Tv, Theater } from "lucide-react";
+import { Search, MapPin, Calendar, Film, Tv, Theater } from "lucide-react";
 import Layout from "@/components/Layout";
-import { useCasting } from "@/contexts/CastingContext";
+import { useCasting, Casting } from "@/contexts/CastingContext";
+import { useAuth } from "@/contexts/AuthContext";
+import CastingApplicationDialog from "@/components/CastingApplicationDialog";
 
 const Castings = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const { castings } = useCasting();
+  const { user, isAuthenticated, setRedirectAfterAuth } = useAuth();
+  
+  const [applicationDialogOpen, setApplicationDialogOpen] = useState(false);
+  const [selectedCasting, setSelectedCasting] = useState<Casting | null>(null);
+
+  // Handle redirect back with apply param
+  useEffect(() => {
+    const applyId = searchParams.get('apply');
+    if (applyId && isAuthenticated && user?.role === 'talent' && user?.hasSubscription) {
+      const casting = castings.find(c => c.id === parseInt(applyId));
+      if (casting) {
+        setSelectedCasting(casting);
+        setApplicationDialogOpen(true);
+        // Clean up URL
+        navigate('/castings', { replace: true });
+      }
+    }
+  }, [searchParams, isAuthenticated, user, castings, navigate]);
 
   const categories = [
     { id: "all", label: "All Categories", icon: null },
@@ -36,6 +59,31 @@ const Castings = () => {
       case "commercial": return "bg-orange-100 text-orange-800";
       default: return "bg-gray-100 text-gray-800";
     }
+  };
+
+  const handleApply = (casting: Casting) => {
+    // Case 1: Not authenticated - redirect to login
+    if (!isAuthenticated) {
+      setRedirectAfterAuth(`/castings?apply=${casting.id}`);
+      navigate('/login?message=login_required&castingId=' + casting.id);
+      return;
+    }
+
+    // Case 2: Authenticated but not a talent
+    if (user?.role !== 'talent') {
+      // Producers can't apply
+      return;
+    }
+
+    // Case 3: Talent without subscription - redirect to subscription page
+    if (!user?.hasSubscription) {
+      navigate(`/subscription?message=subscription_required&castingId=${casting.id}`);
+      return;
+    }
+
+    // Case 4: Talent with subscription - open application dialog
+    setSelectedCasting(casting);
+    setApplicationDialogOpen(true);
   };
 
   return (
@@ -125,8 +173,13 @@ const Castings = () => {
 
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-accent">{casting.compensation}</span>
-                    <Button size="sm" variant="default">
-                      Apply Now
+                    <Button 
+                      size="sm" 
+                      variant="default"
+                      onClick={() => handleApply(casting)}
+                      disabled={user?.role === 'producer'}
+                    >
+                      {user?.role === 'producer' ? 'Producteur' : 'Apply Now'}
                     </Button>
                   </div>
                 </CardContent>
@@ -144,6 +197,13 @@ const Castings = () => {
           )}
         </div>
       </div>
+
+      {/* Application Dialog */}
+      <CastingApplicationDialog
+        casting={selectedCasting}
+        open={applicationDialogOpen}
+        onOpenChange={setApplicationDialogOpen}
+      />
     </Layout>
   );
 };
