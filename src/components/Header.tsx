@@ -1,22 +1,75 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Star } from "lucide-react";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Menu, X, Star, User, LogOut, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, isAuthenticated, logout } = useAuth();
 
-  const navItems = [
-    { name: "Home", path: "/" },
-    { name: "Castings", path: "/castings" },
-    { name: "News", path: "/news" },
-    { name: "About", path: "/about" },
-    { name: "Contact", path: "/contact" }
-  ];
+  // Navigation items based on authentication and role
+  const getNavItems = () => {
+    if (!isAuthenticated) {
+      return [
+        { name: "Accueil", path: "/" },
+        { name: "Castings", path: "/castings" },
+        { name: "Actualités", path: "/news" },
+        { name: "À propos", path: "/about" },
+        { name: "Contact", path: "/contact" }
+      ];
+    }
+
+    if (user?.role === 'talent') {
+      return [
+        { name: "Accueil", path: "/" },
+        { name: "Castings", path: "/castings" },
+        { name: "Mes Candidatures", path: "/my-applications" },
+        { name: "Messages", path: "/messages" }
+      ];
+    }
+
+    if (user?.role === 'producer') {
+      return [
+        { name: "Accueil", path: "/" },
+        { name: "Mes Castings", path: "/producer-dashboard" },
+        { name: "Publier un Casting", path: "/create-casting" },
+        { name: "Recherche Talents", path: "/talent-search" },
+        { name: "Facturation", path: "/billing" }
+      ];
+    }
+
+    return [];
+  };
+
+  const navItems = getNavItems();
 
   const isActive = (path: string) => location.pathname === path;
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+    setIsMenuOpen(false);
+  };
+
+  const getUserInitials = () => {
+    if (user?.name) {
+      return user.name.slice(0, 2).toUpperCase();
+    }
+    return user?.email?.slice(0, 2).toUpperCase() || 'U';
+  };
 
   return (
     <header className="bg-gradient-card backdrop-blur-sm border-b border-border sticky top-0 z-50 shadow-card">
@@ -33,7 +86,7 @@ const Header = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden md:flex items-center space-x-6">
             {navItems.map((item) => (
               <Link
                 key={item.name}
@@ -50,17 +103,69 @@ const Header = () => {
             ))}
           </nav>
 
-          {/* Desktop Auth Buttons */}
+          {/* Desktop Auth/User Section */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="outline" asChild>
-              <Link to="/signup">Post a Casting</Link>
-            </Button>
-            <Button variant="outline" asChild>
-              <Link to="/login">Login</Link>
-            </Button>
-            <Button variant="hero" asChild>
-              <Link to="/signup">Sign Up</Link>
-            </Button>
+            {isAuthenticated && user ? (
+              <>
+                {/* Role Badge */}
+                <span className={cn(
+                  "text-xs font-medium px-2 py-1 rounded-full",
+                  user.role === 'talent' 
+                    ? "bg-blue-100 text-blue-700" 
+                    : "bg-purple-100 text-purple-700"
+                )}>
+                  {user.role === 'talent' ? 'Talent' : 'Producteur'}
+                </span>
+
+                {/* User Dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                      <Avatar className="h-10 w-10 border-2 border-primary">
+                        <AvatarFallback className="bg-gradient-hero text-primary-foreground font-semibold">
+                          {getUserInitials()}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end">
+                    <DropdownMenuLabel>
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium">{user.name}</p>
+                        <p className="text-xs text-muted-foreground">{user.email}</p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile" className="cursor-pointer">
+                        <User className="mr-2 h-4 w-4" />
+                        Mon Profil
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/messages" className="cursor-pointer">
+                        <Settings className="mr-2 h-4 w-4" />
+                        Paramètres
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Déconnexion
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" asChild>
+                  <Link to="/login">Connexion</Link>
+                </Button>
+                <Button variant="hero" asChild>
+                  <Link to="/signup">Inscription</Link>
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -76,6 +181,30 @@ const Header = () => {
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t border-border animate-fade-in">
             <nav className="flex flex-col space-y-3">
+              {/* User info for mobile if authenticated */}
+              {isAuthenticated && user && (
+                <div className="px-3 py-2 mb-2 bg-muted rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <Avatar className="h-10 w-10 border-2 border-primary">
+                      <AvatarFallback className="bg-gradient-hero text-primary-foreground font-semibold">
+                        {getUserInitials()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-sm font-medium">{user.name}</p>
+                      <span className={cn(
+                        "text-xs font-medium px-2 py-0.5 rounded-full",
+                        user.role === 'talent' 
+                          ? "bg-blue-100 text-blue-700" 
+                          : "bg-purple-100 text-purple-700"
+                      )}>
+                        {user.role === 'talent' ? 'Talent' : 'Producteur'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {navItems.map((item) => (
                 <Link
                   key={item.name}
@@ -91,16 +220,31 @@ const Header = () => {
                   {item.name}
                 </Link>
               ))}
+
               <div className="flex flex-col space-y-2 pt-3 border-t border-border">
-                <Button variant="outline" asChild>
-                  <Link to="/signup" onClick={() => setIsMenuOpen(false)}>Post a Casting</Link>
-                </Button>
-                <Button variant="outline" asChild>
-                  <Link to="/login" onClick={() => setIsMenuOpen(false)}>Login</Link>
-                </Button>
-                <Button variant="hero" asChild>
-                  <Link to="/signup" onClick={() => setIsMenuOpen(false)}>Sign Up</Link>
-                </Button>
+                {isAuthenticated && user ? (
+                  <>
+                    <Button variant="outline" asChild>
+                      <Link to="/profile" onClick={() => setIsMenuOpen(false)}>
+                        <User className="mr-2 h-4 w-4" />
+                        Mon Profil
+                      </Link>
+                    </Button>
+                    <Button variant="destructive" onClick={handleLogout}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Déconnexion
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="outline" asChild>
+                      <Link to="/login" onClick={() => setIsMenuOpen(false)}>Connexion</Link>
+                    </Button>
+                    <Button variant="hero" asChild>
+                      <Link to="/signup" onClick={() => setIsMenuOpen(false)}>Inscription</Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </nav>
           </div>
