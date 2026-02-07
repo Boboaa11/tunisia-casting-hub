@@ -1,15 +1,18 @@
- import { useState } from "react";
- import { Link, useNavigate } from "react-router-dom";
+import { useState, useCallback } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
- import { Eye, EyeOff, Star, Users, Clapperboard, ArrowLeft } from "lucide-react";
+import { Eye, EyeOff, Star, Users, Clapperboard, ArrowLeft } from "lucide-react";
 import Layout from "@/components/Layout";
- import { useAuth } from "@/contexts/AuthContext";
- import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { useFormValidation, validateEmail, validatePassword, validateConfirmPassword, validateRequired, validatePhone, validateAge } from "@/hooks/useFormValidation";
+import FormFieldError from "@/components/FormFieldError";
+import PasswordStrengthBar from "@/components/PasswordStrengthBar";
 
  type AccountType = 'talent' | 'producer' | null;
  
@@ -52,53 +55,114 @@ const SignUp = () => {
      agreeToMarketing: false
    });
  
+  const talentValidation = useFormValidation();
+  const producerValidation = useFormValidation();
+
+  const validateTalentField = useCallback((name: string, value: string) => {
+    switch (name) {
+      case "firstName": return validateRequired(value, "Le prénom");
+      case "lastName": return validateRequired(value, "Le nom");
+      case "email": return validateEmail(value);
+      case "phone": return validatePhone(value);
+      case "age": return validateAge(value);
+      case "password": return validatePassword(value);
+      case "confirmPassword": return validateConfirmPassword(talentFormData.password, value);
+      default: return "";
+    }
+  }, [talentFormData.password]);
+
+  const validateProducerField = useCallback((name: string, value: string) => {
+    switch (name) {
+      case "companyName": return validateRequired(value, "Le nom de l'entreprise");
+      case "contactName": return validateRequired(value, "Le nom du contact");
+      case "email": return validateEmail(value);
+      case "phone": return validatePhone(value);
+      case "password": return validatePassword(value);
+      case "confirmPassword": return validateConfirmPassword(producerFormData.password, value);
+      default: return "";
+    }
+  }, [producerFormData.password]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
      
-     const formData = accountType === 'talent' ? talentFormData : producerFormData;
-     const name = accountType === 'talent' 
-       ? `${talentFormData.firstName} ${talentFormData.lastName}`
-       : producerFormData.contactName;
+    const formData = accountType === 'talent' ? talentFormData : producerFormData;
+    const validation = accountType === 'talent' ? talentValidation : producerValidation;
+    const validateField = accountType === 'talent' ? validateTalentField : validateProducerField;
+
+    // Validate all fields
+    const fieldsToValidate = accountType === 'talent'
+      ? ["firstName", "lastName", "email", "password", "confirmPassword"]
+      : ["companyName", "contactName", "email", "password", "confirmPassword"];
+    
+    let hasError = false;
+    for (const field of fieldsToValidate) {
+      const error = validateField(field, (formData as any)[field]);
+      validation.setFieldError(field, error);
+      validation.markTouched(field);
+      if (error) hasError = true;
+    }
+
+    if (hasError) {
+      toast({ title: "Erreur", description: "Veuillez corriger les erreurs du formulaire", variant: "destructive" });
+      return;
+    }
+
+    const name = accountType === 'talent' 
+      ? `${talentFormData.firstName} ${talentFormData.lastName}`
+      : producerFormData.contactName;
      
-     if (formData.password !== formData.confirmPassword) {
-       toast({
-         title: "Erreur",
-         description: "Les mots de passe ne correspondent pas",
-         variant: "destructive"
-       });
-       return;
-     }
+    signup(formData.email, formData.password, name, accountType);
      
-     signup(formData.email, formData.password, name, accountType);
+    toast({
+      title: "Compte créé avec succès !",
+      description: `Bienvenue sur Tunisia Casting en tant que ${accountType === 'talent' ? 'Talent' : 'Producteur'}`,
+    });
      
-     toast({
-       title: "Compte créé avec succès !",
-       description: `Bienvenue sur Tunisia Casting en tant que ${accountType === 'talent' ? 'Talent' : 'Producteur'}`,
-     });
-     
-     if (redirectAfterAuth) {
-       const redirect = redirectAfterAuth;
-       setRedirectAfterAuth(null);
-       navigate(redirect);
-     } else {
-       navigate(accountType === 'talent' ? '/castings' : '/producer-dashboard');
-     }
+    if (redirectAfterAuth) {
+      const redirect = redirectAfterAuth;
+      setRedirectAfterAuth(null);
+      navigate(redirect);
+    } else {
+      navigate(accountType === 'talent' ? '/castings' : '/producer-dashboard');
+    }
   };
 
-   const handleTalentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleTalentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, type, checked, value } = e.target;
-     setTalentFormData({
-       ...talentFormData,
-      [name]: type === "checkbox" ? checked : value
-    });
+    const newValue = type === "checkbox" ? checked : value;
+    setTalentFormData({ ...talentFormData, [name]: newValue });
+    if (talentValidation.isTouched(name) && type !== "checkbox") {
+      talentValidation.setFieldError(name, validateTalentField(name, value));
+    }
+    // Re-validate confirmPassword when password changes
+    if (name === "password" && talentValidation.isTouched("confirmPassword")) {
+      talentValidation.setFieldError("confirmPassword", validateConfirmPassword(value, talentFormData.confirmPassword));
+    }
   };
 
-   const handleProducerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-     const { name, type, checked, value } = e.target;
-     setProducerFormData({
-       ...producerFormData,
-       [name]: type === "checkbox" ? checked : value
-    });
+  const handleTalentBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    talentValidation.markTouched(name);
+    talentValidation.setFieldError(name, validateTalentField(name, value));
+  };
+
+  const handleProducerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, type, checked, value } = e.target;
+    const newValue = type === "checkbox" ? checked : value;
+    setProducerFormData({ ...producerFormData, [name]: newValue });
+    if (producerValidation.isTouched(name) && type !== "checkbox") {
+      producerValidation.setFieldError(name, validateProducerField(name, value));
+    }
+    if (name === "password" && producerValidation.isTouched("confirmPassword")) {
+      producerValidation.setFieldError("confirmPassword", validateConfirmPassword(value, producerFormData.confirmPassword));
+    }
+  };
+
+  const handleProducerBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    producerValidation.markTouched(name);
+    producerValidation.setFieldError(name, validateProducerField(name, value));
   };
 
    const handleSelectAccountType = (type: AccountType) => {
@@ -245,75 +309,85 @@ const SignUp = () => {
                </CardHeader>
                <CardContent>
                  <form onSubmit={handleSubmit} className="space-y-6">
-                   <div className="grid grid-cols-2 gap-4">
-                     <div className="space-y-2">
-                       <Label htmlFor="firstName" className="text-foreground">Prénom</Label>
-                       <Input
-                         id="firstName"
-                         name="firstName"
-                         type="text"
-                         required
-                         value={talentFormData.firstName}
-                         onChange={handleTalentChange}
-                         placeholder="Votre prénom"
-                         className="shadow-card"
-                       />
-                     </div>
-                     <div className="space-y-2">
-                       <Label htmlFor="lastName" className="text-foreground">Nom</Label>
-                       <Input
-                         id="lastName"
-                         name="lastName"
-                         type="text"
-                         required
-                         value={talentFormData.lastName}
-                         onChange={handleTalentChange}
-                         placeholder="Votre nom"
-                         className="shadow-card"
-                       />
-                     </div>
-                   </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="firstName" className="text-foreground">Prénom *</Label>
+                        <Input
+                          id="firstName"
+                          name="firstName"
+                          type="text"
+                          required
+                          value={talentFormData.firstName}
+                          onChange={handleTalentChange}
+                          onBlur={handleTalentBlur}
+                          placeholder="Votre prénom"
+                          className={`shadow-card ${talentValidation.getError("firstName") ? "border-destructive" : ""}`}
+                        />
+                        <FormFieldError error={talentValidation.getError("firstName")} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="lastName" className="text-foreground">Nom *</Label>
+                        <Input
+                          id="lastName"
+                          name="lastName"
+                          type="text"
+                          required
+                          value={talentFormData.lastName}
+                          onChange={handleTalentChange}
+                          onBlur={handleTalentBlur}
+                          placeholder="Votre nom"
+                          className={`shadow-card ${talentValidation.getError("lastName") ? "border-destructive" : ""}`}
+                        />
+                        <FormFieldError error={talentValidation.getError("lastName")} />
+                      </div>
+                    </div>
  
-                   <div className="space-y-2">
-                     <Label htmlFor="email" className="text-foreground">Adresse email</Label>
-                     <Input
-                       id="email"
-                       name="email"
-                       type="email"
-                       required
-                       value={talentFormData.email}
-                       onChange={handleTalentChange}
-                       placeholder="votre@email.com"
-                       className="shadow-card"
-                     />
-                   </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className="text-foreground">Adresse email *</Label>
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        required
+                        value={talentFormData.email}
+                        onChange={handleTalentChange}
+                        onBlur={handleTalentBlur}
+                        placeholder="votre@email.com"
+                        className={`shadow-card ${talentValidation.getError("email") ? "border-destructive" : ""}`}
+                      />
+                      <FormFieldError error={talentValidation.getError("email")} />
+                    </div>
  
-                   <div className="grid grid-cols-2 gap-4">
-                     <div className="space-y-2">
-                       <Label htmlFor="phone" className="text-foreground">Téléphone</Label>
-                       <Input
-                         id="phone"
-                         name="phone"
-                         type="tel"
-                         value={talentFormData.phone}
-                         onChange={handleTalentChange}
-                         placeholder="+216 XX XXX XXX"
-                         className="shadow-card"
-                       />
-                     </div>
-                     <div className="space-y-2">
-                       <Label htmlFor="age" className="text-foreground">Âge</Label>
-                       <Input
-                         id="age"
-                         name="age"
-                         type="number"
-                         value={talentFormData.age}
-                         onChange={handleTalentChange}
-                         placeholder="25"
-                         className="shadow-card"
-                       />
-                     </div>
-                   </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="phone" className="text-foreground">Téléphone</Label>
+                        <Input
+                          id="phone"
+                          name="phone"
+                          type="tel"
+                          value={talentFormData.phone}
+                          onChange={handleTalentChange}
+                          onBlur={handleTalentBlur}
+                          placeholder="+216 XX XXX XXX"
+                          className={`shadow-card ${talentValidation.getError("phone") ? "border-destructive" : ""}`}
+                        />
+                        <FormFieldError error={talentValidation.getError("phone")} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="age" className="text-foreground">Âge</Label>
+                        <Input
+                          id="age"
+                          name="age"
+                          type="number"
+                          value={talentFormData.age}
+                          onChange={handleTalentChange}
+                          onBlur={handleTalentBlur}
+                          placeholder="25"
+                          className={`shadow-card ${talentValidation.getError("age") ? "border-destructive" : ""}`}
+                        />
+                        <FormFieldError error={talentValidation.getError("age")} />
+                      </div>
+                    </div>
  
                    <div className="grid grid-cols-2 gap-4">
                      <div className="space-y-2">
@@ -347,58 +421,63 @@ const SignUp = () => {
                      </div>
                    </div>
  
-                   <div className="space-y-2">
-                     <Label htmlFor="password" className="text-foreground">Mot de passe</Label>
-                     <div className="relative">
-                       <Input
-                         id="password"
-                         name="password"
-                         type={showPassword ? "text" : "password"}
-                         required
-                         value={talentFormData.password}
-                         onChange={handleTalentChange}
-                         placeholder="Créez un mot de passe"
-                         className="shadow-card pr-10"
-                       />
-                       <button
-                         type="button"
-                         className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                         onClick={() => setShowPassword(!showPassword)}
-                       >
-                         {showPassword ? (
-                           <EyeOff className="h-4 w-4 text-muted-foreground" />
-                         ) : (
-                           <Eye className="h-4 w-4 text-muted-foreground" />
-                         )}
-                       </button>
-                     </div>
-                   </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="password" className="text-foreground">Mot de passe *</Label>
+                      <div className="relative">
+                        <Input
+                          id="password"
+                          name="password"
+                          type={showPassword ? "text" : "password"}
+                          required
+                          value={talentFormData.password}
+                          onChange={handleTalentChange}
+                          onBlur={handleTalentBlur}
+                          placeholder="Créez un mot de passe"
+                          className={`shadow-card pr-10 ${talentValidation.getError("password") ? "border-destructive" : ""}`}
+                        />
+                        <button
+                          type="button"
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <Eye className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </button>
+                      </div>
+                      <PasswordStrengthBar password={talentFormData.password} />
+                      <FormFieldError error={talentValidation.getError("password")} />
+                    </div>
  
-                   <div className="space-y-2">
-                     <Label htmlFor="confirmPassword" className="text-foreground">Confirmer le mot de passe</Label>
-                     <div className="relative">
-                       <Input
-                         id="confirmPassword"
-                         name="confirmPassword"
-                         type={showConfirmPassword ? "text" : "password"}
-                         required
-                         value={talentFormData.confirmPassword}
-                         onChange={handleTalentChange}
-                         placeholder="Confirmez votre mot de passe"
-                         className="shadow-card pr-10"
-                       />
-                       <button
-                         type="button"
-                         className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                       >
-                         {showConfirmPassword ? (
-                           <EyeOff className="h-4 w-4 text-muted-foreground" />
-                         ) : (
-                           <Eye className="h-4 w-4 text-muted-foreground" />
-                         )}
-                       </button>
-                     </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword" className="text-foreground">Confirmer le mot de passe *</Label>
+                      <div className="relative">
+                        <Input
+                          id="confirmPassword"
+                          name="confirmPassword"
+                          type={showConfirmPassword ? "text" : "password"}
+                          required
+                          value={talentFormData.confirmPassword}
+                          onChange={handleTalentChange}
+                          onBlur={handleTalentBlur}
+                          placeholder="Confirmez votre mot de passe"
+                          className={`shadow-card pr-10 ${talentValidation.getError("confirmPassword") ? "border-destructive" : ""}`}
+                        />
+                        <button
+                          type="button"
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        >
+                          {showConfirmPassword ? (
+                            <EyeOff className="h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <Eye className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </button>
+                      </div>
+                      <FormFieldError error={talentValidation.getError("confirmPassword")} />
                    </div>
  
                    <div className="space-y-4">
@@ -493,145 +572,158 @@ const SignUp = () => {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                  <div className="space-y-2">
-                   <Label htmlFor="companyName" className="text-foreground">Nom de l'entreprise / Agence</Label>
-                   <Input
-                     id="companyName"
-                     name="companyName"
-                     type="text"
-                     required
-                     value={producerFormData.companyName}
-                     onChange={handleProducerChange}
-                     placeholder="Nom de votre entreprise"
-                     className="shadow-card"
-                   />
-                 </div>
+                    <Label htmlFor="companyName" className="text-foreground">Nom de l'entreprise / Agence *</Label>
+                    <Input
+                      id="companyName"
+                      name="companyName"
+                      type="text"
+                      required
+                      value={producerFormData.companyName}
+                      onChange={handleProducerChange}
+                      onBlur={handleProducerBlur}
+                      placeholder="Nom de votre entreprise"
+                      className={`shadow-card ${producerValidation.getError("companyName") ? "border-destructive" : ""}`}
+                    />
+                    <FormFieldError error={producerValidation.getError("companyName")} />
+                  </div>
  
+                  <div className="space-y-2">
+                    <Label htmlFor="contactName" className="text-foreground">Nom du contact *</Label>
+                    <Input
+                      id="contactName"
+                      name="contactName"
+                      type="text"
+                      required
+                      value={producerFormData.contactName}
+                      onChange={handleProducerChange}
+                      onBlur={handleProducerBlur}
+                      placeholder="Votre nom complet"
+                      className={`shadow-card ${producerValidation.getError("contactName") ? "border-destructive" : ""}`}
+                    />
+                    <FormFieldError error={producerValidation.getError("contactName")} />
+                 </div>
+
                  <div className="space-y-2">
-                   <Label htmlFor="contactName" className="text-foreground">Nom du contact</Label>
+                    <Label htmlFor="email" className="text-foreground">Email professionnel *</Label>
                    <Input
-                     id="contactName"
-                     name="contactName"
-                     type="text"
+                     id="email"
+                     name="email"
+                     type="email"
                      required
-                     value={producerFormData.contactName}
-                     onChange={handleProducerChange}
-                     placeholder="Votre nom complet"
-                     className="shadow-card"
+                      value={producerFormData.email}
+                      onChange={handleProducerChange}
+                      onBlur={handleProducerBlur}
+                      placeholder="contact@entreprise.com"
+                     className={`shadow-card ${producerValidation.getError("email") ? "border-destructive" : ""}`}
                    />
-                </div>
+                   <FormFieldError error={producerValidation.getError("email")} />
+                 </div>
 
-                <div className="space-y-2">
-                   <Label htmlFor="email" className="text-foreground">Email professionnel</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    required
-                     value={producerFormData.email}
-                     onChange={handleProducerChange}
-                     placeholder="contact@entreprise.com"
-                    className="shadow-card"
-                  />
-                </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="phone" className="text-foreground">Téléphone</Label>
+                      <Input
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        value={producerFormData.phone}
+                        onChange={handleProducerChange}
+                        onBlur={handleProducerBlur}
+                        placeholder="+216 XX XXX XXX"
+                        className={`shadow-card ${producerValidation.getError("phone") ? "border-destructive" : ""}`}
+                      />
+                      <FormFieldError error={producerValidation.getError("phone")} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="productionType" className="text-foreground">Type de production</Label>
+                      <Select onValueChange={(value) => setProducerFormData({...producerFormData, productionType: value})}>
+                        <SelectTrigger className="shadow-card">
+                          <SelectValue placeholder="Sélectionnez" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="film">Cinéma</SelectItem>
+                          <SelectItem value="tv">Télévision</SelectItem>
+                          <SelectItem value="advertising">Publicité</SelectItem>
+                          <SelectItem value="theater">Théâtre</SelectItem>
+                          <SelectItem value="music">Musique</SelectItem>
+                          <SelectItem value="agency">Agence de casting</SelectItem>
+                          <SelectItem value="other">Autre</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                 </div>
 
-                 <div className="grid grid-cols-2 gap-4">
-                   <div className="space-y-2">
-                     <Label htmlFor="phone" className="text-foreground">Téléphone</Label>
+                 <div className="space-y-2">
+                    <Label htmlFor="website" className="text-foreground">Site web (optionnel)</Label>
+                    <Input
+                      id="website"
+                      name="website"
+                      type="url"
+                      value={producerFormData.website}
+                      onChange={handleProducerChange}
+                      placeholder="https://www.entreprise.com"
+                      className="shadow-card"
+                    />
+                 </div>
+
+                 <div className="space-y-2">
+                    <Label htmlFor="password" className="text-foreground">Mot de passe *</Label>
+                   <div className="relative">
                      <Input
-                       id="phone"
-                       name="phone"
-                       type="tel"
-                       value={producerFormData.phone}
-                       onChange={handleProducerChange}
-                       placeholder="+216 XX XXX XXX"
-                       className="shadow-card"
+                       id="password"
+                       name="password"
+                       type={showPassword ? "text" : "password"}
+                       required
+                        value={producerFormData.password}
+                        onChange={handleProducerChange}
+                        onBlur={handleProducerBlur}
+                        placeholder="Créez un mot de passe"
+                       className={`shadow-card pr-10 ${producerValidation.getError("password") ? "border-destructive" : ""}`}
                      />
+                     <button
+                       type="button"
+                       className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                       onClick={() => setShowPassword(!showPassword)}
+                     >
+                       {showPassword ? (
+                         <EyeOff className="h-4 w-4 text-muted-foreground" />
+                       ) : (
+                         <Eye className="h-4 w-4 text-muted-foreground" />
+                       )}
+                     </button>
                    </div>
-                   <div className="space-y-2">
-                     <Label htmlFor="productionType" className="text-foreground">Type de production</Label>
-                     <Select onValueChange={(value) => setProducerFormData({...producerFormData, productionType: value})}>
-                       <SelectTrigger className="shadow-card">
-                         <SelectValue placeholder="Sélectionnez" />
-                       </SelectTrigger>
-                       <SelectContent>
-                         <SelectItem value="film">Cinéma</SelectItem>
-                         <SelectItem value="tv">Télévision</SelectItem>
-                         <SelectItem value="advertising">Publicité</SelectItem>
-                         <SelectItem value="theater">Théâtre</SelectItem>
-                         <SelectItem value="music">Musique</SelectItem>
-                         <SelectItem value="agency">Agence de casting</SelectItem>
-                         <SelectItem value="other">Autre</SelectItem>
-                       </SelectContent>
-                     </Select>
+                   <PasswordStrengthBar password={producerFormData.password} />
+                   <FormFieldError error={producerValidation.getError("password")} />
+                 </div>
+
+                 <div className="space-y-2">
+                    <Label htmlFor="confirmPassword" className="text-foreground">Confirmer le mot de passe *</Label>
+                   <div className="relative">
+                     <Input
+                       id="confirmPassword"
+                       name="confirmPassword"
+                       type={showConfirmPassword ? "text" : "password"}
+                       required
+                        value={producerFormData.confirmPassword}
+                        onChange={handleProducerChange}
+                        onBlur={handleProducerBlur}
+                        placeholder="Confirmez votre mot de passe"
+                       className={`shadow-card pr-10 ${producerValidation.getError("confirmPassword") ? "border-destructive" : ""}`}
+                     />
+                     <button
+                       type="button"
+                       className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                     >
+                       {showConfirmPassword ? (
+                         <EyeOff className="h-4 w-4 text-muted-foreground" />
+                       ) : (
+                         <Eye className="h-4 w-4 text-muted-foreground" />
+                       )}
+                     </button>
                    </div>
-                </div>
-
-                <div className="space-y-2">
-                   <Label htmlFor="website" className="text-foreground">Site web (optionnel)</Label>
-                   <Input
-                     id="website"
-                     name="website"
-                     type="url"
-                     value={producerFormData.website}
-                     onChange={handleProducerChange}
-                     placeholder="https://www.entreprise.com"
-                     className="shadow-card"
-                   />
-                </div>
-
-                <div className="space-y-2">
-                   <Label htmlFor="password" className="text-foreground">Mot de passe</Label>
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      name="password"
-                      type={showPassword ? "text" : "password"}
-                      required
-                       value={producerFormData.password}
-                       onChange={handleProducerChange}
-                       placeholder="Créez un mot de passe"
-                      className="shadow-card pr-10"
-                    />
-                    <button
-                      type="button"
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4 text-muted-foreground" />
-                      ) : (
-                        <Eye className="h-4 w-4 text-muted-foreground" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                   <Label htmlFor="confirmPassword" className="text-foreground">Confirmer le mot de passe</Label>
-                  <div className="relative">
-                    <Input
-                      id="confirmPassword"
-                      name="confirmPassword"
-                      type={showConfirmPassword ? "text" : "password"}
-                      required
-                       value={producerFormData.confirmPassword}
-                       onChange={handleProducerChange}
-                       placeholder="Confirmez votre mot de passe"
-                      className="shadow-card pr-10"
-                    />
-                    <button
-                      type="button"
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    >
-                      {showConfirmPassword ? (
-                        <EyeOff className="h-4 w-4 text-muted-foreground" />
-                      ) : (
-                        <Eye className="h-4 w-4 text-muted-foreground" />
-                      )}
-                    </button>
-                  </div>
-                </div>
+                   <FormFieldError error={producerValidation.getError("confirmPassword")} />
+                 </div>
 
                 <div className="space-y-4">
                   <div className="flex items-center space-x-2">
