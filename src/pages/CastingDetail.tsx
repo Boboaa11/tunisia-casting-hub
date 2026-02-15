@@ -181,7 +181,7 @@ const CastingDetail = () => {
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
                     <FileText className="h-5 w-5 text-primary" />
-                    Synopsis du projet
+                    Description du projet
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
