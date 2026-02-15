@@ -1,14 +1,36 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 export interface CastingRole {
+  id: string;
   name: string;
   description: string;
   ageRange: string;
   gender: string;
+  ethnicity?: string;
   appearance?: string;
   skills?: string[];
   languages?: string[];
   specialTalents?: string[];
+  experienceLevel?: string;
+  talentsNeeded?: number;
+  shootingDates?: string;
+  roleLocation?: string;
+  roleCompensation?: string;
+}
+
+export interface CastingApplication {
+  id: string;
+  castingId: number;
+  roleId: string;
+  applicantName: string;
+  applicantEmail: string;
+  coverMessage: string;
+  experience: string;
+  availability: string;
+  photoFiles?: string[];
+  videoShowreel?: string;
+  portfolioFile?: string;
+  submittedAt: string;
 }
 
 export interface Casting {
@@ -44,9 +66,13 @@ export interface Casting {
 
 interface CastingContextType {
   castings: Casting[];
+  applications: CastingApplication[];
   addCasting: (casting: Omit<Casting, 'id'>) => void;
   updateCasting: (id: number, casting: Partial<Casting>) => void;
   deleteCasting: (id: number) => void;
+  addApplication: (application: Omit<CastingApplication, 'id' | 'submittedAt'>) => void;
+  getApplicationsForCasting: (castingId: number) => CastingApplication[];
+  getApplicationsForRole: (castingId: number, roleId: string) => CastingApplication[];
 }
 
 const CastingContext = createContext<CastingContextType | undefined>(undefined);
@@ -83,16 +109,24 @@ const initialCastings: Casting[] = [
     additionalRequirements: ["Showreel or demo reel", "Professional headshots", "Self-tape audition (2 min monologue)"],
     roles: [
       {
+        id: "role-1-1",
         name: "Hannibal Barca (Lead)",
         description: "A brilliant young military strategist torn between duty to Carthage and personal ambition. Must convey charisma, intelligence, and physical strength.",
         ageRange: "25-35 ans",
         gender: "Homme",
+        ethnicity: "Méditerranéen",
         appearance: "Athletic build, Mediterranean features, dark hair",
         skills: ["Horseback riding", "Stage combat", "Dramatic acting"],
         languages: ["Arabe", "Français", "Anglais (un plus)"],
-        specialTalents: ["Sword fighting", "Leadership presence"]
+        specialTalents: ["Sword fighting", "Leadership presence"],
+        experienceLevel: "Professionnel (5+ ans)",
+        talentsNeeded: 1,
+        shootingDates: "Mars - Août 2025",
+        roleLocation: "Carthage, Sidi Bou Said",
+        roleCompensation: "2,500 TND/épisode"
       },
       {
+        id: "role-1-2",
         name: "Sophonisba (Supporting)",
         description: "A Carthaginian noblewoman and political strategist. Intelligent, poised, and fiercely loyal to her city.",
         ageRange: "22-30 ans",
@@ -100,7 +134,27 @@ const initialCastings: Casting[] = [
         appearance: "Elegant, regal bearing",
         skills: ["Classical acting", "Emotional depth"],
         languages: ["Arabe", "Français"],
-        specialTalents: ["Period movement", "Dance"]
+        specialTalents: ["Period movement", "Dance"],
+        experienceLevel: "Intermédiaire (2-5 ans)",
+        talentsNeeded: 1,
+        shootingDates: "Avril - Juillet 2025",
+        roleLocation: "Carthage",
+        roleCompensation: "1,800 TND/épisode"
+      },
+      {
+        id: "role-1-3",
+        name: "Hasdrubal (Supporting)",
+        description: "Hannibal's younger brother and loyal lieutenant. Brave but impulsive, provides comic relief amid the drama.",
+        ageRange: "20-28 ans",
+        gender: "Homme",
+        appearance: "Youthful, energetic",
+        skills: ["Stage combat", "Physical comedy"],
+        languages: ["Arabe", "Français"],
+        experienceLevel: "Débutant à Intermédiaire",
+        talentsNeeded: 1,
+        shootingDates: "Mars - Août 2025",
+        roleLocation: "Carthage, Dougga",
+        roleCompensation: "1,500 TND/épisode"
       }
     ]
   },
@@ -127,6 +181,7 @@ const initialCastings: Casting[] = [
     additionalRequirements: ["Comedy showreel", "Recent headshots"],
     roles: [
       {
+        id: "role-2-1",
         name: "Yasmine (Supporting Lead)",
         description: "The quirky, lovable best friend who gives terrible dating advice but has a heart of gold. Great comedic timing required.",
         ageRange: "20-30 ans",
@@ -134,7 +189,27 @@ const initialCastings: Casting[] = [
         appearance: "Warm, approachable, expressive face",
         skills: ["Comedy", "Improvisation", "Physical comedy"],
         languages: ["Arabe tunisien", "Français"],
-        specialTalents: ["Singing (a plus)", "Dance"]
+        specialTalents: ["Singing (a plus)", "Dance"],
+        experienceLevel: "Intermédiaire",
+        talentsNeeded: 1,
+        shootingDates: "Juin - Juillet 2025",
+        roleLocation: "Sidi Bou Said, La Marsa",
+        roleCompensation: "1,800 TND total"
+      },
+      {
+        id: "role-2-2",
+        name: "Grand-mère Fatma",
+        description: "The wise and witty grandmother who secretly orchestrates the love story. Comedic matriarch with sharp tongue and warm heart.",
+        ageRange: "60-75 ans",
+        gender: "Femme",
+        appearance: "Warm, maternal, distinctive presence",
+        skills: ["Drama", "Comedy"],
+        languages: ["Arabe tunisien"],
+        experienceLevel: "Tous niveaux",
+        talentsNeeded: 1,
+        shootingDates: "Juin 2025",
+        roleLocation: "Sidi Bou Said",
+        roleCompensation: "1,200 TND total"
       }
     ]
   },
@@ -161,30 +236,48 @@ const initialCastings: Casting[] = [
     additionalRequirements: ["Live audition required", "Prepare a 3-minute contemporary monologue"],
     roles: [
       {
+        id: "role-3-1",
         name: "Amine",
         description: "A young software developer questioning whether to stay in Tunisia or emigrate. Internal conflict drives his arc.",
         ageRange: "22-28 ans",
         gender: "Homme",
         skills: ["Stage acting", "Monologue delivery"],
-        languages: ["Arabe", "Français"]
+        languages: ["Arabe", "Français"],
+        experienceLevel: "Intermédiaire",
+        talentsNeeded: 1,
+        shootingDates: "Avril - Juin 2025",
+        roleLocation: "Théâtre Municipal de Tunis",
+        roleCompensation: "800 TND/mois + 120 TND/représentation"
       },
       {
+        id: "role-3-2",
         name: "Nour",
         description: "An aspiring musician caught between conservative family expectations and artistic dreams.",
         ageRange: "18-25 ans",
         gender: "Femme",
         skills: ["Musical theater", "Vocal performance"],
         languages: ["Arabe"],
-        specialTalents: ["Singing", "Guitar or oud"]
+        specialTalents: ["Singing", "Guitar or oud"],
+        experienceLevel: "Débutant à Intermédiaire",
+        talentsNeeded: 1,
+        shootingDates: "Avril - Juin 2025",
+        roleLocation: "Théâtre Municipal de Tunis",
+        roleCompensation: "800 TND/mois + 120 TND/représentation"
       },
       {
+        id: "role-3-3",
         name: "Karim",
         description: "A street artist using graffiti as political expression. Physical, rebellious energy.",
         ageRange: "20-30 ans",
         gender: "Homme",
         appearance: "Lean, energetic",
         skills: ["Physical theater", "Movement"],
-        languages: ["Arabe", "Français"]
+        languages: ["Arabe", "Français"],
+        experienceLevel: "Intermédiaire",
+        talentsNeeded: 1,
+        shootingDates: "Avril - Juin 2025",
+        roleLocation: "Cité de la Culture",
+        roleCompensation: "800 TND/mois + 120 TND/représentation"
       }
     ]
   },
@@ -211,29 +304,89 @@ const initialCastings: Casting[] = [
     additionalRequirements: ["Professional portfolio (minimum 10 photos)", "Comp card", "Full-body and close-up photos"],
     roles: [
       {
+        id: "role-4-1",
         name: "Lead Model - Traditional Line",
         description: "Represent the heritage collection. Must embody elegance and cultural pride while wearing traditional Tunisian designs.",
         ageRange: "20-30 ans",
         gender: "Femme",
         appearance: "Height 175cm+, striking features, confident posture",
         skills: ["Runway experience", "Posing"],
-        languages: ["Arabe"]
+        languages: ["Arabe"],
+        experienceLevel: "Professionnel",
+        talentsNeeded: 2,
+        shootingDates: "Mai 2025",
+        roleLocation: "Sousse Medina",
+        roleCompensation: "500 TND/jour"
       },
       {
+        id: "role-4-2",
         name: "Lead Model - Modern Line",
         description: "Represent the contemporary collection. Urban, edgy aesthetic that bridges tradition and modernity.",
         ageRange: "18-28 ans",
         gender: "Non spécifié",
         appearance: "Height 170cm+, unique look, diverse backgrounds welcome",
         skills: ["Editorial modeling", "Movement"],
-        languages: ["Arabe", "Français"]
+        languages: ["Arabe", "Français"],
+        experienceLevel: "Tous niveaux",
+        talentsNeeded: 3,
+        shootingDates: "Mai 2025",
+        roleLocation: "El Jem Amphitheater",
+        roleCompensation: "500 TND/jour"
       }
     ]
   }
 ];
 
+const initialApplications: CastingApplication[] = [
+  {
+    id: "app-1",
+    castingId: 1,
+    roleId: "role-1-1",
+    applicantName: "Ahmed Ben Ali",
+    applicantEmail: "ahmed@example.com",
+    coverMessage: "Passionné d'histoire et d'art dramatique, je suis convaincu de pouvoir incarner Hannibal avec authenticité.",
+    experience: "5 ans de théâtre, 2 films tunisiens",
+    availability: "Disponible de mars à août 2025",
+    submittedAt: "2024-02-15T10:30:00Z"
+  },
+  {
+    id: "app-2",
+    castingId: 1,
+    roleId: "role-1-1",
+    applicantName: "Youssef Chaari",
+    applicantEmail: "youssef@example.com",
+    coverMessage: "Acteur formé au conservatoire, j'ai une expérience significative dans les rôles historiques.",
+    experience: "8 ans d'expérience, rôle principal dans 3 séries",
+    availability: "Totalement disponible",
+    submittedAt: "2024-02-16T14:20:00Z"
+  },
+  {
+    id: "app-3",
+    castingId: 1,
+    roleId: "role-1-2",
+    applicantName: "Meriem Jouini",
+    applicantEmail: "meriem@example.com",
+    coverMessage: "Le rôle de Sophonisba me parle profondément. Mon expérience en théâtre classique est un atout.",
+    experience: "3 ans de théâtre classique, 1 film",
+    availability: "Disponible d'avril à juillet",
+    submittedAt: "2024-02-17T09:15:00Z"
+  },
+  {
+    id: "app-4",
+    castingId: 2,
+    roleId: "role-2-1",
+    applicantName: "Sana Trabelsi",
+    applicantEmail: "sana@example.com",
+    coverMessage: "J'adore la comédie et je pense pouvoir apporter beaucoup à Yasmine !",
+    experience: "Stand-up comedy, 2 courts-métrages comiques",
+    availability: "Disponible juin-juillet 2025",
+    submittedAt: "2024-02-18T11:00:00Z"
+  }
+];
+
 export const CastingProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [castings, setCastings] = useState<Casting[]>(initialCastings);
+  const [applications, setApplications] = useState<CastingApplication[]>(initialApplications);
 
   const addCasting = (newCasting: Omit<Casting, 'id'>) => {
     const id = Math.max(...castings.map(c => c.id), 0) + 1;
@@ -250,8 +403,35 @@ export const CastingProvider: React.FC<{ children: ReactNode }> = ({ children })
     setCastings(prev => prev.filter(casting => casting.id !== id));
   };
 
+  const addApplication = (application: Omit<CastingApplication, 'id' | 'submittedAt'>) => {
+    const newApp: CastingApplication = {
+      ...application,
+      id: `app-${Date.now()}`,
+      submittedAt: new Date().toISOString(),
+    };
+    setApplications(prev => [...prev, newApp]);
+    // Increment application count on casting
+    setCastings(prev => prev.map(c =>
+      c.id === application.castingId
+        ? { ...c, applications: (c.applications || 0) + 1 }
+        : c
+    ));
+  };
+
+  const getApplicationsForCasting = (castingId: number) => {
+    return applications.filter(a => a.castingId === castingId);
+  };
+
+  const getApplicationsForRole = (castingId: number, roleId: string) => {
+    return applications.filter(a => a.castingId === castingId && a.roleId === roleId);
+  };
+
   return (
-    <CastingContext.Provider value={{ castings, addCasting, updateCasting, deleteCasting }}>
+    <CastingContext.Provider value={{
+      castings, applications,
+      addCasting, updateCasting, deleteCasting,
+      addApplication, getApplicationsForCasting, getApplicationsForRole
+    }}>
       {children}
     </CastingContext.Provider>
   );
