@@ -5,10 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   MapPin, Calendar, Clock, DollarSign, Users, Film, Tv, Theater,
-  ArrowLeft, Briefcase, Globe, Star, FileText, ChevronRight
+  ArrowLeft, Briefcase, Globe, Star, FileText, ChevronRight, UserCheck
 } from "lucide-react";
 import Layout from "@/components/Layout";
-import { useCasting, Casting } from "@/contexts/CastingContext";
+import { useCasting, CastingRole } from "@/contexts/CastingContext";
 import { useAuth } from "@/contexts/AuthContext";
 import CastingApplicationDialog from "@/components/CastingApplicationDialog";
 import { useState } from "react";
@@ -41,6 +41,7 @@ const CastingDetail = () => {
   const { toast } = useToast();
 
   const [applicationDialogOpen, setApplicationDialogOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<CastingRole | null>(null);
 
   const casting = castings.find(c => c.id === parseInt(id || "0"));
 
@@ -61,9 +62,9 @@ const CastingDetail = () => {
 
   const CategoryIcon = getCategoryIcon(casting.category);
 
-  const handleApply = () => {
+  const handleApplyForRole = (role: CastingRole) => {
     if (!isAuthenticated) {
-      setRedirectAfterAuth(`/castings?apply=${casting.id}`);
+      setRedirectAfterAuth(`/casting/${casting.id}`);
       navigate('/login?message=login_required&castingId=' + casting.id);
       return;
     }
@@ -72,6 +73,7 @@ const CastingDetail = () => {
       navigate(`/subscription?message=subscription_required&castingId=${casting.id}`);
       return;
     }
+    setSelectedRole(role);
     setApplicationDialogOpen(true);
   };
 
@@ -80,11 +82,7 @@ const CastingDetail = () => {
       <div className="min-h-screen bg-gradient-card py-8">
         <div className="container mx-auto px-4 max-w-4xl">
           {/* Back Button */}
-          <Button
-            variant="ghost"
-            className="mb-6"
-            onClick={() => navigate("/castings")}
-          >
+          <Button variant="ghost" className="mb-6" onClick={() => navigate("/castings")}>
             <ArrowLeft className="h-4 w-4 mr-2" /> Retour aux castings
           </Button>
 
@@ -103,22 +101,18 @@ const CastingDetail = () => {
                         {casting.status}
                       </Badge>
                     )}
+                    {casting.roles && (
+                      <Badge variant="secondary">
+                        <Users className="h-3 w-3 mr-1" />
+                        {casting.roles.length} rôle{casting.roles.length > 1 ? 's' : ''}
+                      </Badge>
+                    )}
                   </div>
                   <CardTitle className="text-2xl md:text-3xl font-bold text-foreground mb-2">
                     {casting.title}
                   </CardTitle>
                   <p className="text-lg text-muted-foreground font-medium">{casting.production}</p>
                 </div>
-                <Button
-                  size="lg"
-                  variant="hero"
-                  className="md:self-start shrink-0"
-                  onClick={handleApply}
-                  disabled={user?.role === 'producer'}
-                >
-                  {user?.role === 'producer' ? 'Producteur' : 'Postuler maintenant'}
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
               </div>
             </CardHeader>
           </Card>
@@ -176,7 +170,7 @@ const CastingDetail = () => {
           <div className="grid md:grid-cols-3 gap-6 animate-slide-up" style={{ animationDelay: '0.1s' }}>
             {/* Main Content */}
             <div className="md:col-span-2 space-y-6">
-              {/* Synopsis */}
+              {/* Description */}
               <Card className="shadow-card">
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
@@ -191,7 +185,7 @@ const CastingDetail = () => {
                 </CardContent>
               </Card>
 
-              {/* Roles */}
+              {/* Roles with individual Apply buttons */}
               {casting.roles && casting.roles.length > 0 && (
                 <Card className="shadow-card">
                   <CardHeader>
@@ -200,13 +194,22 @@ const CastingDetail = () => {
                       Rôles recherchés ({casting.roles.length})
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-6">
                     {casting.roles.map((role, index) => (
-                      <div key={index}>
-                        {index > 0 && <Separator className="mb-4" />}
+                      <div key={role.id || index}>
+                        {index > 0 && <Separator className="mb-6" />}
                         <div className="space-y-3">
-                          <h4 className="font-semibold text-foreground text-base">{role.name}</h4>
+                          <div className="flex items-start justify-between gap-3">
+                            <h4 className="font-semibold text-foreground text-base">{role.name}</h4>
+                            {role.talentsNeeded && (
+                              <Badge variant="outline" className="shrink-0">
+                                <UserCheck className="h-3 w-3 mr-1" />
+                                {role.talentsNeeded} recherché{role.talentsNeeded > 1 ? 's' : ''}
+                              </Badge>
+                            )}
+                          </div>
                           <p className="text-sm text-muted-foreground">{role.description}</p>
+
                           <div className="flex flex-wrap gap-2">
                             <Badge variant="outline">
                               <Calendar className="h-3 w-3 mr-1" /> {role.ageRange}
@@ -214,12 +217,22 @@ const CastingDetail = () => {
                             <Badge variant="outline">
                               <Users className="h-3 w-3 mr-1" /> {role.gender}
                             </Badge>
+                            {role.ethnicity && (
+                              <Badge variant="outline">{role.ethnicity}</Badge>
+                            )}
+                            {role.experienceLevel && (
+                              <Badge variant="outline">
+                                <Star className="h-3 w-3 mr-1" /> {role.experienceLevel}
+                              </Badge>
+                            )}
                           </div>
+
                           {role.appearance && (
                             <p className="text-sm text-muted-foreground">
                               <span className="font-medium text-foreground">Apparence :</span> {role.appearance}
                             </p>
                           )}
+
                           {role.skills && role.skills.length > 0 && (
                             <div>
                               <span className="text-sm font-medium text-foreground">Compétences :</span>
@@ -230,6 +243,7 @@ const CastingDetail = () => {
                               </div>
                             </div>
                           )}
+
                           {role.languages && role.languages.length > 0 && (
                             <div className="flex items-center gap-2">
                               <Globe className="h-4 w-4 text-primary" />
@@ -238,6 +252,7 @@ const CastingDetail = () => {
                               </span>
                             </div>
                           )}
+
                           {role.specialTalents && role.specialTalents.length > 0 && (
                             <div>
                               <span className="text-sm font-medium text-foreground flex items-center gap-1">
@@ -250,6 +265,40 @@ const CastingDetail = () => {
                               </div>
                             </div>
                           )}
+
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-muted-foreground pt-1">
+                            {role.shootingDates && (
+                              <div className="flex items-center gap-1">
+                                <Clock className="h-3 w-3 text-primary" />
+                                {role.shootingDates}
+                              </div>
+                            )}
+                            {role.roleLocation && (
+                              <div className="flex items-center gap-1">
+                                <MapPin className="h-3 w-3 text-primary" />
+                                {role.roleLocation}
+                              </div>
+                            )}
+                            {role.roleCompensation && (
+                              <div className="flex items-center gap-1">
+                                <DollarSign className="h-3 w-3 text-primary" />
+                                {role.roleCompensation}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Per-role Apply button */}
+                          <div className="pt-2">
+                            <Button
+                              size="sm"
+                              variant="default"
+                              onClick={() => handleApplyForRole(role)}
+                              disabled={user?.role === 'producer'}
+                            >
+                              {user?.role === 'producer' ? 'Producteur' : `Postuler pour ${role.name}`}
+                              <ChevronRight className="h-4 w-4 ml-1" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -294,7 +343,6 @@ const CastingDetail = () => {
 
             {/* Sidebar */}
             <div className="space-y-6">
-              {/* Production Details */}
               <Card className="shadow-card">
                 <CardHeader>
                   <CardTitle className="text-lg">Détails de production</CardTitle>
@@ -343,21 +391,15 @@ const CastingDetail = () => {
                 </CardContent>
               </Card>
 
-              {/* Apply CTA */}
               <Card className="shadow-card border-primary/20 bg-primary/5">
                 <CardContent className="p-6 text-center">
                   <h3 className="font-semibold text-foreground mb-2">Intéressé(e) ?</h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Postulez avant le {new Date(casting.deadline).toLocaleDateString('fr-FR')}
+                    Choisissez un rôle ci-dessus et postulez avant le {new Date(casting.deadline).toLocaleDateString('fr-FR')}
                   </p>
-                  <Button
-                    className="w-full"
-                    variant="hero"
-                    onClick={handleApply}
-                    disabled={user?.role === 'producer'}
-                  >
-                    {user?.role === 'producer' ? 'Producteur' : 'Postuler maintenant'}
-                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    {casting.roles?.length || 0} rôle{(casting.roles?.length || 0) > 1 ? 's' : ''} disponible{(casting.roles?.length || 0) > 1 ? 's' : ''}
+                  </p>
                 </CardContent>
               </Card>
             </div>
@@ -367,6 +409,7 @@ const CastingDetail = () => {
 
       <CastingApplicationDialog
         casting={casting}
+        role={selectedRole}
         open={applicationDialogOpen}
         onOpenChange={setApplicationDialogOpen}
       />

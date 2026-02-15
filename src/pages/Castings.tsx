@@ -201,6 +201,7 @@ const Castings = () => {
       {/* Application Dialog */}
       <CastingApplicationDialog
         casting={selectedCasting}
+        role={selectedCasting?.roles?.[0] || null}
         open={applicationDialogOpen}
         onOpenChange={setApplicationDialogOpen}
       />
