@@ -7,6 +7,7 @@ import { CastingProvider } from "@/contexts/CastingContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Castings from "./pages/Castings";
+import CastingDetail from "./pages/CastingDetail";
 import News from "./pages/News";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
@@ -35,6 +36,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/castings" element={<Castings />} />
+              <Route path="/casting/:id" element={<CastingDetail />} />
               <Route path="/news" element={<News />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />

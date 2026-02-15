@@ -135,7 +135,7 @@ const Castings = () => {
           {/* Castings Grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredCastings.map((casting, index) => (
-              <Card key={casting.id} className="shadow-card hover:shadow-elegant transition-all duration-300 transform hover:-translate-y-1 bg-card animate-slide-up" style={{animationDelay: `${index * 0.1}s`}}>
+              <Card key={casting.id} className="shadow-card hover:shadow-elegant transition-all duration-300 transform hover:-translate-y-1 bg-card animate-slide-up cursor-pointer" style={{animationDelay: `${index * 0.1}s`}} onClick={() => navigate(`/casting/${casting.id}`)}>
                 <CardHeader>
                   <div className="flex items-start justify-between mb-2">
                     <CardTitle className="text-lg font-semibold text-foreground">{casting.title}</CardTitle>
@@ -176,7 +176,7 @@ const Castings = () => {
                     <Button 
                       size="sm" 
                       variant="default"
-                      onClick={() => handleApply(casting)}
+                      onClick={(e) => { e.stopPropagation(); handleApply(casting); }}
                       disabled={user?.role === 'producer'}
                     >
                       {user?.role === 'producer' ? 'Producteur' : 'Apply Now'}
