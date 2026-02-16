@@ -161,33 +161,35 @@ const Castings = () => {
                   className="shadow-card hover:shadow-elegant transition-all duration-300 bg-card animate-slide-up overflow-hidden border-border/60"
                   style={{ animationDelay: `${index * 0.08}s` }}
                 >
-                  <div className="flex flex-col lg:flex-row">
-                    {/* Left: Project Overview */}
-                    <div className="flex-1 p-6 lg:border-r border-border/40">
-                      <div className="flex items-start justify-between gap-3 mb-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            {casting.isPaid && (
-                              <Badge variant="secondary" className="bg-accent/20 text-accent-foreground border border-accent/30 text-xs gap-1">
-                                <Star className="h-3 w-3" /> Featured
-                              </Badge>
-                            )}
-                            <Badge variant="outline" className="text-xs gap-1 border-border">
-                              <CategoryIcon className="h-3 w-3" />
-                              {casting.type}
-                            </Badge>
-                          </div>
-                          <h2
-                            className="text-lg font-bold text-foreground hover:text-primary transition-colors cursor-pointer leading-tight"
-                            onClick={() => navigate(`/casting/${casting.id}`)}
-                          >
-                            {casting.title}
-                          </h2>
-                          <p className="text-sm text-muted-foreground font-medium mt-0.5">{casting.production}</p>
-                        </div>
-                      </div>
+                  {/* Card Header — Project Name */}
+                  <div
+                    className="px-6 pt-5 pb-3 border-b border-border/40 cursor-pointer group"
+                    onClick={() => navigate(`/casting/${casting.id}`)}
+                  >
+                    <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                      {casting.isPaid && (
+                        <Badge variant="secondary" className="bg-accent/20 text-accent-foreground border border-accent/30 text-xs gap-1">
+                          <Star className="h-3 w-3" /> Featured
+                        </Badge>
+                      )}
+                      <Badge variant="outline" className="text-xs gap-1 border-border">
+                        <CategoryIcon className="h-3 w-3" />
+                        {casting.type}
+                      </Badge>
+                    </div>
+                    <h2 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors leading-tight">
+                      {casting.title}
+                    </h2>
+                  </div>
 
-                      <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                  <div className="flex flex-col lg:flex-row">
+                    {/* Left: Production Details */}
+                    <div className="flex-1 p-6 lg:border-r border-border/40">
+                      <p className="text-sm font-semibold text-foreground mb-1">
+                        {casting.production}
+                      </p>
+
+                      <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
                         {casting.description}
                       </p>
 
@@ -225,7 +227,7 @@ const Castings = () => {
                       </Button>
                     </div>
 
-                    {/* Right: Roles Preview */}
+                    {/* Right: Role Descriptions */}
                     <div className="lg:w-[340px] xl:w-[380px] bg-muted/30 p-4 flex flex-col gap-2.5">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -246,23 +248,23 @@ const Castings = () => {
                           >
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                                <span className="font-semibold text-sm text-foreground truncate">
-                                  {role.name.replace(/\s*\(.*?\)\s*/g, '')}
-                                </span>
                                 <Badge variant="outline" className={`text-[10px] px-1.5 py-0 h-4 ${getRoleTypeBadgeClass(roleType)}`}>
                                   {roleType}
                                 </Badge>
-                              </div>
-                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                 {role.gender && (
-                                  <span className="flex items-center gap-0.5">
+                                  <span className="text-xs text-muted-foreground flex items-center gap-0.5">
                                     <User className="h-3 w-3" /> {role.gender}
                                   </span>
                                 )}
                                 {role.ageRange && (
-                                  <span>• {role.ageRange}</span>
+                                  <span className="text-xs text-muted-foreground">• {role.ageRange}</span>
                                 )}
                               </div>
+                              {role.description && (
+                                <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+                                  {role.description}
+                                </p>
+                              )}
                             </div>
                             <Button
                               size="sm"
