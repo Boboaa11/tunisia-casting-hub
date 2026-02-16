@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, MapPin, Calendar, Film, Tv, Theater } from "lucide-react";
+import { Search, MapPin, Calendar, Film, Tv, Theater, Clock, DollarSign, Star, Users, ChevronRight, User } from "lucide-react";
 import Layout from "@/components/Layout";
-import { useCasting, Casting } from "@/contexts/CastingContext";
+import { useCasting, Casting, CastingRole } from "@/contexts/CastingContext";
 import { useAuth } from "@/contexts/AuthContext";
 import CastingApplicationDialog from "@/components/CastingApplicationDialog";
 
@@ -20,16 +20,16 @@ const Castings = () => {
   
   const [applicationDialogOpen, setApplicationDialogOpen] = useState(false);
   const [selectedCasting, setSelectedCasting] = useState<Casting | null>(null);
+  const [selectedRole, setSelectedRole] = useState<CastingRole | null>(null);
 
-  // Handle redirect back with apply param
   useEffect(() => {
     const applyId = searchParams.get('apply');
     if (applyId && isAuthenticated && user?.role === 'talent' && user?.hasSubscription) {
       const casting = castings.find(c => c.id === parseInt(applyId));
       if (casting) {
         setSelectedCasting(casting);
+        setSelectedRole(casting.roles?.[0] || null);
         setApplicationDialogOpen(true);
-        // Clean up URL
         navigate('/castings', { replace: true });
       }
     }
@@ -51,39 +51,56 @@ const Castings = () => {
     return matchesSearch && matchesCategory;
   });
 
-  const getCategoryColor = (category: string) => {
+  const getCategoryIcon = (category: string) => {
     switch (category) {
-      case "tv": return "bg-blue-100 text-blue-800";
-      case "film": return "bg-purple-100 text-purple-800";
-      case "theater": return "bg-green-100 text-green-800";
-      case "commercial": return "bg-orange-100 text-orange-800";
-      default: return "bg-gray-100 text-gray-800";
+      case "tv": return Tv;
+      case "film": return Film;
+      case "theater": return Theater;
+      default: return Film;
     }
   };
 
-  const handleApply = (casting: Casting) => {
-    // Case 1: Not authenticated - redirect to login
+  const handleApply = (casting: Casting, role: CastingRole) => {
     if (!isAuthenticated) {
       setRedirectAfterAuth(`/castings?apply=${casting.id}`);
       navigate('/login?message=login_required&castingId=' + casting.id);
       return;
     }
-
-    // Case 2: Authenticated but not a talent
-    if (user?.role !== 'talent') {
-      // Producers can't apply
-      return;
-    }
-
-    // Case 3: Talent without subscription - redirect to subscription page
+    if (user?.role !== 'talent') return;
     if (!user?.hasSubscription) {
       navigate(`/subscription?message=subscription_required&castingId=${casting.id}`);
       return;
     }
-
-    // Case 4: Talent with subscription - open application dialog
     setSelectedCasting(casting);
+    setSelectedRole(role);
     setApplicationDialogOpen(true);
+  };
+
+  const getRoleType = (roleName: string): string => {
+    const lower = roleName.toLowerCase();
+    if (lower.includes('lead') || lower.includes('principal')) return 'Lead';
+    if (lower.includes('supporting')) return 'Supporting';
+    if (lower.includes('extra') || lower.includes('figurant')) return 'Extra';
+    return 'Role';
+  };
+
+  const getRoleTypeBadgeClass = (type: string): string => {
+    switch (type) {
+      case 'Lead': return 'bg-primary/10 text-primary border-primary/20';
+      case 'Supporting': return 'bg-secondary/30 text-secondary-foreground border-secondary/40';
+      case 'Extra': return 'bg-muted text-muted-foreground border-border';
+      default: return 'bg-accent/20 text-accent-foreground border-accent/30';
+    }
+  };
+
+  const getTimeAgo = (dateStr?: string) => {
+    if (!dateStr) return '';
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    if (days === 0) return "Today";
+    if (days === 1) return "1 day ago";
+    if (days < 30) return `${days} days ago`;
+    return `${Math.floor(days / 30)}mo ago`;
   };
 
   return (
@@ -115,7 +132,6 @@ const Castings = () => {
               </div>
             </div>
 
-            {/* Category Filters */}
             <div className="flex flex-wrap gap-2">
               {categories.map((category) => (
                 <Button
@@ -132,65 +148,157 @@ const Castings = () => {
             </div>
           </div>
 
-          {/* Castings Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredCastings.map((casting, index) => (
-              <Card key={casting.id} className="shadow-card hover:shadow-elegant transition-all duration-300 transform hover:-translate-y-1 bg-card animate-slide-up cursor-pointer" style={{animationDelay: `${index * 0.1}s`}} onClick={() => navigate(`/casting/${casting.id}`)}>
-                <CardHeader>
-                  <div className="flex items-start justify-between mb-2">
-                    <CardTitle className="text-lg font-semibold text-foreground">{casting.title}</CardTitle>
-                    <Badge variant="secondary" className={getCategoryColor(casting.category)}>
-                      {casting.type}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground font-medium">{casting.production}</p>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground mb-4">{casting.description}</p>
-                  
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <MapPin className="h-4 w-4 mr-2 text-primary" />
-                      {casting.location}
-                    </div>
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <Calendar className="h-4 w-4 mr-2 text-primary" />
-                      Deadline: {new Date(casting.deadline).toLocaleDateString()}
-                    </div>
-                  </div>
+          {/* Castings List */}
+          <div className="flex flex-col gap-5">
+            {filteredCastings.map((casting, index) => {
+              const CategoryIcon = getCategoryIcon(casting.category);
+              const rolesPreview = casting.roles?.slice(0, 3) || [];
+              const extraRoles = (casting.roles?.length || 0) - 3;
 
-                  <div className="mb-4">
-                    <h4 className="text-sm font-semibold mb-2 text-foreground">Requirements:</h4>
-                    <ul className="text-xs text-muted-foreground space-y-1">
-                      {casting.requirements.map((req, idx) => (
-                        <li key={idx} className="flex items-start">
-                          <span className="w-1 h-1 bg-primary rounded-full mt-2 mr-2 flex-shrink-0"></span>
-                          {req}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+              return (
+                <Card
+                  key={casting.id}
+                  className="shadow-card hover:shadow-elegant transition-all duration-300 bg-card animate-slide-up overflow-hidden border-border/60"
+                  style={{ animationDelay: `${index * 0.08}s` }}
+                >
+                  <div className="flex flex-col lg:flex-row">
+                    {/* Left: Project Overview */}
+                    <div className="flex-1 p-6 lg:border-r border-border/40">
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            {casting.isPaid && (
+                              <Badge variant="secondary" className="bg-accent/20 text-accent-foreground border border-accent/30 text-xs gap-1">
+                                <Star className="h-3 w-3" /> Featured
+                              </Badge>
+                            )}
+                            <Badge variant="outline" className="text-xs gap-1 border-border">
+                              <CategoryIcon className="h-3 w-3" />
+                              {casting.type}
+                            </Badge>
+                          </div>
+                          <h2
+                            className="text-lg font-bold text-foreground hover:text-primary transition-colors cursor-pointer leading-tight"
+                            onClick={() => navigate(`/casting/${casting.id}`)}
+                          >
+                            {casting.title}
+                          </h2>
+                          <p className="text-sm text-muted-foreground font-medium mt-0.5">{casting.production}</p>
+                        </div>
+                      </div>
 
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-accent">{casting.compensation}</span>
-                    <Button 
-                      size="sm" 
-                      variant="default"
-                      onClick={(e) => { e.stopPropagation(); handleApply(casting); }}
-                      disabled={user?.role === 'producer'}
-                    >
-                      {user?.role === 'producer' ? 'Producteur' : 'Apply Now'}
-                    </Button>
+                      <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                        {casting.description}
+                      </p>
+
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm mb-4">
+                        <div className="flex items-center text-muted-foreground">
+                          <MapPin className="h-3.5 w-3.5 mr-1.5 text-primary flex-shrink-0" />
+                          <span className="truncate">{casting.location}</span>
+                        </div>
+                        <div className="flex items-center text-muted-foreground">
+                          <DollarSign className="h-3.5 w-3.5 mr-1.5 text-primary flex-shrink-0" />
+                          <span className="truncate">{casting.compensation}</span>
+                        </div>
+                        {casting.productionDates && (
+                          <div className="flex items-center text-muted-foreground">
+                            <Calendar className="h-3.5 w-3.5 mr-1.5 text-primary flex-shrink-0" />
+                            <span className="truncate">{casting.productionDates}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center text-muted-foreground">
+                          <Clock className="h-3.5 w-3.5 mr-1.5 text-primary flex-shrink-0" />
+                          <span className="truncate">
+                            {casting.createdAt ? getTimeAgo(casting.createdAt) : `Deadline: ${new Date(casting.deadline).toLocaleDateString()}`}
+                          </span>
+                        </div>
+                      </div>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5 text-xs"
+                        onClick={() => navigate(`/casting/${casting.id}`)}
+                      >
+                        View All Roles
+                        <ChevronRight className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+
+                    {/* Right: Roles Preview */}
+                    <div className="lg:w-[340px] xl:w-[380px] bg-muted/30 p-4 flex flex-col gap-2.5">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          Available Roles
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          <Users className="h-3 w-3 inline mr-1" />
+                          {casting.roles?.length || 0} roles
+                        </span>
+                      </div>
+
+                      {rolesPreview.map((role) => {
+                        const roleType = getRoleType(role.name);
+                        return (
+                          <div
+                            key={role.id}
+                            className="bg-card rounded-lg border border-border/60 p-3 flex items-center justify-between gap-3 hover:border-primary/30 transition-colors"
+                          >
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                                <span className="font-semibold text-sm text-foreground truncate">
+                                  {role.name.replace(/\s*\(.*?\)\s*/g, '')}
+                                </span>
+                                <Badge variant="outline" className={`text-[10px] px-1.5 py-0 h-4 ${getRoleTypeBadgeClass(roleType)}`}>
+                                  {roleType}
+                                </Badge>
+                              </div>
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                {role.gender && (
+                                  <span className="flex items-center gap-0.5">
+                                    <User className="h-3 w-3" /> {role.gender}
+                                  </span>
+                                )}
+                                {role.ageRange && (
+                                  <span>• {role.ageRange}</span>
+                                )}
+                              </div>
+                            </div>
+                            <Button
+                              size="sm"
+                              className="h-7 text-xs px-3 flex-shrink-0"
+                              onClick={(e) => { e.stopPropagation(); handleApply(casting, role); }}
+                              disabled={user?.role === 'producer'}
+                            >
+                              Apply
+                            </Button>
+                          </div>
+                        );
+                      })}
+
+                      {extraRoles > 0 && (
+                        <button
+                          className="text-xs text-primary hover:text-primary-glow font-medium text-center py-1 transition-colors"
+                          onClick={() => navigate(`/casting/${casting.id}`)}
+                        >
+                          + {extraRoles} more role{extraRoles > 1 ? 's' : ''}
+                        </button>
+                      )}
+
+                      {(!casting.roles || casting.roles.length === 0) && (
+                        <p className="text-xs text-muted-foreground text-center py-4">No roles listed yet</p>
+                      )}
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                </Card>
+              );
+            })}
           </div>
 
           {filteredCastings.length === 0 && (
             <div className="text-center py-12">
               <p className="text-lg text-muted-foreground">No castings found matching your criteria.</p>
-              <Button variant="outline" className="mt-4" onClick={() => {setSearchTerm(""); setSelectedCategory("all");}}>
+              <Button variant="outline" className="mt-4" onClick={() => { setSearchTerm(""); setSelectedCategory("all"); }}>
                 Clear Filters
               </Button>
             </div>
@@ -198,10 +306,9 @@ const Castings = () => {
         </div>
       </div>
 
-      {/* Application Dialog */}
       <CastingApplicationDialog
         casting={selectedCasting}
-        role={selectedCasting?.roles?.[0] || null}
+        role={selectedRole}
         open={applicationDialogOpen}
         onOpenChange={setApplicationDialogOpen}
       />
