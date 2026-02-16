@@ -1,139 +1,143 @@
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Save, Send, Plus, X } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { ArrowLeft, ArrowRight, Save, Send, Check } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useCasting } from "@/contexts/CastingContext";
+import StepProjectInfo, { type ProjectData } from "@/components/casting-form/StepProjectInfo";
+import StepRoles, { type RoleData } from "@/components/casting-form/StepRoles";
+import StepMedia, { type MediaData } from "@/components/casting-form/StepMedia";
+import StepPreview from "@/components/casting-form/StepPreview";
+
+const STEPS = [
+  { label: "Projet", number: 1 },
+  { label: "Rôles", number: 2 },
+  { label: "Médias", number: 3 },
+  { label: "Aperçu", number: 4 },
+];
 
 const CreateCasting = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { addCasting } = useCasting();
-  
-  const [formData, setFormData] = useState({
+  const [currentStep, setCurrentStep] = useState(1);
+
+  const [project, setProject] = useState<ProjectData>({
     title: "",
-    production: "",
     type: "",
+    production: "",
+    synopsis: "",
     location: "",
-    deadline: "",
-    description: "",
-    requirements: "",
+    shootingDates: "",
     compensation: "",
-    ageMin: "",
-    ageMax: "",
-    gender: "",
-    experience: "",
-    languages: [] as string[],
-    specialSkills: [] as string[]
+    deadline: "",
   });
 
-  const [newLanguage, setNewLanguage] = useState("");
-  const [newSkill, setNewSkill] = useState("");
+  const [roles, setRoles] = useState<RoleData[]>([]);
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const [media, setMedia] = useState<MediaData>({
+    auditionInstructions: "",
+    requiredDocuments: [],
+    additionalNotes: "",
+  });
+
+  const handleProjectChange = (field: keyof ProjectData, value: string) => {
+    setProject((prev) => ({ ...prev, [field]: value }));
   };
 
-  const addLanguage = () => {
-    if (newLanguage.trim() && !formData.languages.includes(newLanguage.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        languages: [...prev.languages, newLanguage.trim()]
-      }));
-      setNewLanguage("");
+  const handleMediaChange = (field: keyof MediaData, value: string | string[]) => {
+    setMedia((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const validateStep = (step: number): boolean => {
+    switch (step) {
+      case 1:
+        if (!project.title || !project.type || !project.production || !project.deadline) {
+          toast({ title: "Champs requis", description: "Veuillez remplir le titre, le type, la société de production et la date limite.", variant: "destructive" });
+          return false;
+        }
+        return true;
+      case 2:
+        if (roles.length === 0) {
+          toast({ title: "Ajoutez au moins un rôle", description: "Votre casting doit contenir au moins un rôle.", variant: "destructive" });
+          return false;
+        }
+        const incomplete = roles.find((r) => !r.roleType || !r.gender);
+        if (incomplete) {
+          toast({ title: "Rôle incomplet", description: "Chaque rôle doit avoir un type et un genre.", variant: "destructive" });
+          return false;
+        }
+        return true;
+      default:
+        return true;
     }
   };
 
-  const removeLanguage = (language: string) => {
-    setFormData(prev => ({
-      ...prev,
-      languages: prev.languages.filter(l => l !== language)
-    }));
-  };
-
-  const addSkill = () => {
-    if (newSkill.trim() && !formData.specialSkills.includes(newSkill.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        specialSkills: [...prev.specialSkills, newSkill.trim()]
-      }));
-      setNewSkill("");
+  const nextStep = () => {
+    if (validateStep(currentStep)) {
+      setCurrentStep((s) => Math.min(s + 1, 4));
     }
   };
 
-  const removeSkill = (skill: string) => {
-    setFormData(prev => ({
-      ...prev,
-      specialSkills: prev.specialSkills.filter(s => s !== skill)
-    }));
-  };
+  const prevStep = () => setCurrentStep((s) => Math.max(s - 1, 1));
 
   const handleSaveDraft = () => {
-    toast({
-      title: "Brouillon sauvegardé",
-      description: "Votre casting a été sauvegardé en brouillon.",
-    });
+    toast({ title: "Brouillon sauvegardé", description: "Votre casting a été sauvegardé en brouillon." });
   };
 
   const handlePublish = () => {
-    if (!formData.title || !formData.production || !formData.type) {
-      toast({
-        title: "Erreur",
-        description: "Veuillez remplir les champs obligatoires.",
-        variant: "destructive"
-      });
-      return;
-    }
+    if (!validateStep(1) || !validateStep(2)) return;
 
-    // Create the casting object
+    const castingRoles = roles.map((r) => ({
+      id: r.id,
+      name: `${r.roleType === "lead" ? "Principal" : r.roleType === "supporting" ? "Secondaire" : "Figurant"} - ${r.gender}`,
+      description: r.description,
+      ageRange: `${r.ageMin || "?"}-${r.ageMax || "?"} ans`,
+      gender: r.gender,
+      ethnicity: r.ethnicity || undefined,
+      skills: r.skills,
+      experienceLevel: r.experienceLevel || undefined,
+      talentsNeeded: parseInt(r.talentsNeeded) || 1,
+    }));
+
     const newCasting = {
-      title: formData.title,
-      production: formData.production,
-      type: formData.type,
-      category: formData.type.toLowerCase().replace('é', 'e'),
-      location: formData.location,
-      deadline: formData.deadline,
-      description: formData.description,
-      requirements: formData.requirements.split('\n').filter(req => req.trim()),
-      compensation: formData.compensation,
+      title: project.title,
+      production: project.production,
+      type: project.type,
+      category: project.type.toLowerCase().replace(/\s+/g, "-"),
+      location: project.location,
+      deadline: project.deadline,
+      description: project.synopsis,
+      synopsis: project.synopsis,
+      requirements: media.requiredDocuments,
+      compensation: project.compensation,
+      compensationDetails: project.compensation,
       status: "Actif",
       applications: 0,
       views: 0,
-      createdAt: new Date().toISOString().split('T')[0],
-      ageMin: formData.ageMin,
-      ageMax: formData.ageMax,
-      gender: formData.gender,
-      experience: formData.experience,
-      languages: formData.languages,
-      specialSkills: formData.specialSkills
+      createdAt: new Date().toISOString().split("T")[0],
+      productionDates: project.shootingDates,
+      shootingLocations: project.location ? [project.location] : [],
+      additionalRequirements: media.requiredDocuments,
+      roles: castingRoles,
+      isPaid: !!project.compensation,
     };
 
     addCasting(newCasting);
-
-    toast({
-      title: "Casting publié",
-      description: "Votre casting a été publié avec succès!",
-    });
-    
-    setTimeout(() => {
-      navigate("/producer-dashboard");
-    }, 1500);
+    toast({ title: "Casting publié !", description: "Votre casting est maintenant visible par les talents." });
+    setTimeout(() => navigate("/producer-dashboard"), 1500);
   };
+
+  const progressValue = (currentStep / 4) * 100;
 
   return (
     <Layout>
       <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
         <div className="container mx-auto px-4 py-8 max-w-4xl">
           {/* Header */}
-          <div className="flex items-center gap-4 mb-8">
+          <div className="flex items-center gap-4 mb-6">
             <Button variant="outline" size="sm" asChild>
               <Link to="/producer-dashboard">
                 <ArrowLeft className="w-4 h-4 mr-2" />
@@ -141,251 +145,92 @@ const CreateCasting = () => {
               </Link>
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-foreground">
-                Créer un Nouveau Casting
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+                Créer un Casting
               </h1>
-              <p className="text-muted-foreground">
-                Trouvez les talents parfaits pour votre production
+              <p className="text-sm text-muted-foreground">
+                Publiez votre appel de casting en 4 étapes simples
               </p>
             </div>
           </div>
 
-          <div className="space-y-8">
-            {/* Informations de base */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Informations de Base</CardTitle>
-                <CardDescription>
-                  Les informations essentielles de votre casting
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="title">Titre du casting *</Label>
-                    <Input
-                      id="title"
-                      placeholder="Ex: Recherche acteur principal"
-                      value={formData.title}
-                      onChange={(e) => handleInputChange("title", e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="production">Production *</Label>
-                    <Input
-                      id="production"
-                      placeholder="Ex: Film Tunisien 2024"
-                      value={formData.production}
-                      onChange={(e) => handleInputChange("production", e.target.value)}
-                    />
-                  </div>
-                </div>
+          {/* Stepper */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-3">
+              {STEPS.map((step) => (
+                <button
+                  key={step.number}
+                  onClick={() => {
+                    if (step.number < currentStep) setCurrentStep(step.number);
+                  }}
+                  className={`flex items-center gap-2 text-sm font-medium transition-colors ${
+                    step.number === currentStep
+                      ? "text-primary"
+                      : step.number < currentStep
+                      ? "text-primary/60 cursor-pointer hover:text-primary"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  <span
+                    className={`flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold transition-colors ${
+                      step.number < currentStep
+                        ? "bg-primary text-primary-foreground"
+                        : step.number === currentStep
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {step.number < currentStep ? <Check className="w-3.5 h-3.5" /> : step.number}
+                  </span>
+                  <span className="hidden sm:inline">{step.label}</span>
+                </button>
+              ))}
+            </div>
+            <Progress value={progressValue} className="h-1.5" />
+          </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="type">Type *</Label>
-                    <Select value={formData.type} onValueChange={(value) => handleInputChange("type", value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="cinema">Cinéma</SelectItem>
-                        <SelectItem value="television">Télévision</SelectItem>
-                        <SelectItem value="theatre">Théâtre</SelectItem>
-                        <SelectItem value="publicite">Publicité</SelectItem>
-                        <SelectItem value="clip">Clip Musical</SelectItem>
-                        <SelectItem value="web">Web/Digital</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="location">Lieu</Label>
-                    <Input
-                      id="location"
-                      placeholder="Ex: Tunis, Sousse..."
-                      value={formData.location}
-                      onChange={(e) => handleInputChange("location", e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="deadline">Date limite</Label>
-                    <Input
-                      id="deadline"
-                      type="date"
-                      value={formData.deadline}
-                      onChange={(e) => handleInputChange("deadline", e.target.value)}
-                    />
-                  </div>
-                </div>
+          {/* Step Content */}
+          <div className="min-h-[400px]">
+            {currentStep === 1 && (
+              <StepProjectInfo data={project} onChange={handleProjectChange} />
+            )}
+            {currentStep === 2 && (
+              <StepRoles roles={roles} onChange={setRoles} />
+            )}
+            {currentStep === 3 && (
+              <StepMedia data={media} onChange={handleMediaChange} />
+            )}
+            {currentStep === 4 && (
+              <StepPreview project={project} roles={roles} media={media} />
+            )}
+          </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description du projet</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Décrivez votre projet, l'histoire, l'ambiance..."
-                    rows={4}
-                    value={formData.description}
-                    onChange={(e) => handleInputChange("description", e.target.value)}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Profil recherché */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Profil Recherché</CardTitle>
-                <CardDescription>
-                  Définissez le profil idéal pour ce rôle
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="space-y-2">
-                    <Label>Tranche d'âge</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Min"
-                        value={formData.ageMin}
-                        onChange={(e) => handleInputChange("ageMin", e.target.value)}
-                      />
-                      <span className="flex items-center px-2">à</span>
-                      <Input
-                        placeholder="Max"
-                        value={formData.ageMax}
-                        onChange={(e) => handleInputChange("ageMax", e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="gender">Genre</Label>
-                    <Select value={formData.gender} onValueChange={(value) => handleInputChange("gender", value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="homme">Homme</SelectItem>
-                        <SelectItem value="femme">Femme</SelectItem>
-                        <SelectItem value="tous">Tous</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="experience">Niveau d'expérience</Label>
-                    <Select value={formData.experience} onValueChange={(value) => handleInputChange("experience", value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="debutant">Débutant</SelectItem>
-                        <SelectItem value="intermediaire">Intermédiaire</SelectItem>
-                        <SelectItem value="experimente">Expérimenté</SelectItem>
-                        <SelectItem value="professionnel">Professionnel</SelectItem>
-                        <SelectItem value="tous">Tous niveaux</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                {/* Langues */}
-                <div className="space-y-2">
-                  <Label>Langues requises</Label>
-                  <div className="flex gap-2 mb-2">
-                    <Input
-                      placeholder="Ajouter une langue"
-                      value={newLanguage}
-                      onChange={(e) => setNewLanguage(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && addLanguage()}
-                    />
-                    <Button type="button" variant="outline" onClick={addLanguage}>
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {formData.languages.map((language) => (
-                      <Badge key={language} variant="secondary" className="flex items-center gap-1">
-                        {language}
-                        <X
-                          className="w-3 h-3 cursor-pointer hover:text-destructive"
-                          onClick={() => removeLanguage(language)}
-                        />
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Compétences spéciales */}
-                <div className="space-y-2">
-                  <Label>Compétences spéciales</Label>
-                  <div className="flex gap-2 mb-2">
-                    <Input
-                      placeholder="Ex: Danse, Chant, Arts martiaux..."
-                      value={newSkill}
-                      onChange={(e) => setNewSkill(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && addSkill()}
-                    />
-                    <Button type="button" variant="outline" onClick={addSkill}>
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {formData.specialSkills.map((skill) => (
-                      <Badge key={skill} variant="secondary" className="flex items-center gap-1">
-                        {skill}
-                        <X
-                          className="w-3 h-3 cursor-pointer hover:text-destructive"
-                          onClick={() => removeSkill(skill)}
-                        />
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="requirements">Exigences spécifiques</Label>
-                  <Textarea
-                    id="requirements"
-                    placeholder="Précisez les exigences particulières, le look recherché, les compétences nécessaires..."
-                    rows={3}
-                    value={formData.requirements}
-                    onChange={(e) => handleInputChange("requirements", e.target.value)}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Compensation */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Compensation</CardTitle>
-                <CardDescription>
-                  Informations sur la rémunération
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <Label htmlFor="compensation">Détails de la compensation</Label>
-                  <Textarea
-                    id="compensation"
-                    placeholder="Ex: Rémunéré, Bénévole, À négocier, Indemnités de transport..."
-                    rows={3}
-                    value={formData.compensation}
-                    onChange={(e) => handleInputChange("compensation", e.target.value)}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Actions */}
-            <div className="flex justify-end gap-4">
+          {/* Navigation */}
+          <div className="flex items-center justify-between mt-8 pt-6 border-t border-border">
+            <div>
+              {currentStep > 1 && (
+                <Button variant="outline" onClick={prevStep}>
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Précédent
+                </Button>
+              )}
+            </div>
+            <div className="flex gap-3">
               <Button variant="outline" onClick={handleSaveDraft}>
                 <Save className="w-4 h-4 mr-2" />
-                Sauvegarder en brouillon
+                Brouillon
               </Button>
-              <Button onClick={handlePublish}>
-                <Send className="w-4 h-4 mr-2" />
-                Publier le casting
-              </Button>
+              {currentStep < 4 ? (
+                <Button onClick={nextStep}>
+                  Suivant
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              ) : (
+                <Button onClick={handlePublish} variant="hero">
+                  <Send className="w-4 h-4 mr-2" />
+                  Publier le casting
+                </Button>
+              )}
             </div>
           </div>
         </div>
