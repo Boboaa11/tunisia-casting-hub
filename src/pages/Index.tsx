@@ -1,11 +1,29 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Search, Users, Star, Film, Camera, Megaphone } from "lucide-react";
 import Layout from "@/components/Layout";
 import heroImage from "@/assets/hero-casting.jpg";
+import { useAuth, DEMO_USERS } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
+  const navigate = useNavigate();
+  const { loginAsDemo } = useAuth();
+  const { toast } = useToast();
+
+  const handleExploreAs = (demoId: string) => {
+    const demo = DEMO_USERS.find(u => u.id === demoId);
+    if (!demo) return;
+    loginAsDemo(demoId);
+    toast({ title: `Bienvenue ${demo.name} !`, description: demo.description });
+    if (demo.role === 'producer' || demo.role === 'admin') {
+      navigate('/producer-dashboard');
+    } else {
+      navigate('/castings');
+    }
+  };
+
   const features = [
     {
       icon: Search,
@@ -64,6 +82,31 @@ const Index = () => {
             <Button variant="outline" size="lg" asChild className="text-lg px-8 py-6 border-white text-white bg-white/10 hover:bg-white hover:text-primary">
               <Link to="/producer-dashboard">Post a Casting</Link>
             </Button>
+          </div>
+
+          {/* Demo Quick Access */}
+          <div className="mt-8 pt-6 border-t border-white/20">
+            <p className="text-sm text-white/60 mb-3">Explorer la plateforme en mode démo</p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-white/30 text-white bg-white/5 hover:bg-white/20 gap-2"
+                onClick={() => handleExploreAs('demo-talent-sub')}
+              >
+                <Star className="h-4 w-4" />
+                Explorer en Talent
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-white/30 text-white bg-white/5 hover:bg-white/20 gap-2"
+                onClick={() => handleExploreAs('demo-producer')}
+              >
+                <Film className="h-4 w-4" />
+                Explorer en Producteur
+              </Button>
+            </div>
           </div>
         </div>
       </section>
