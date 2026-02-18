@@ -4,15 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, Star, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, Star, AlertCircle, Users, Film, Shield, Sparkles } from "lucide-react";
 import Layout from "@/components/Layout";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, DEMO_USERS } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { login, isAuthenticated, redirectAfterAuth, user } = useAuth();
+  const { login, loginAsDemo, isAuthenticated, redirectAfterAuth, user } = useAuth();
   const { toast } = useToast();
   
   const [showPassword, setShowPassword] = useState(false);
@@ -204,6 +204,51 @@ const Login = () => {
                   </Link>
                 </p>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Demo Quick Access */}
+          <Card className="shadow-elegant bg-card border-dashed border-2 border-primary/30">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2 text-foreground">
+                <Sparkles className="h-5 w-5 text-primary" />
+                Accès Démo Rapide
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Explorez la plateforme sans inscription avec un compte de démonstration.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {DEMO_USERS.map((demo) => {
+                const iconMap: Record<string, React.ReactNode> = {
+                  'demo-talent-sub': <Star className="h-4 w-4" />,
+                  'demo-talent-free': <Users className="h-4 w-4" />,
+                  'demo-producer': <Film className="h-4 w-4" />,
+                  'demo-admin': <Shield className="h-4 w-4" />,
+                };
+                return (
+                  <button
+                    key={demo.id}
+                    type="button"
+                    onClick={() => {
+                      loginAsDemo(demo.id);
+                      toast({
+                        title: `Connecté en tant que ${demo.name}`,
+                        description: demo.description,
+                      });
+                    }}
+                    className="w-full flex items-center gap-3 p-3 rounded-lg border border-border hover:border-primary/50 hover:bg-accent/50 transition-all text-left group"
+                  >
+                    <div className="flex-shrink-0 w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                      {iconMap[demo.id]}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-sm text-foreground">{demo.label}</div>
+                      <div className="text-xs text-muted-foreground truncate">{demo.description}</div>
+                    </div>
+                  </button>
+                );
+              })}
             </CardContent>
           </Card>
         </div>
