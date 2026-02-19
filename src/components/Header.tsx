@@ -34,25 +34,29 @@ const Header = () => {
 
     if (user?.role === 'talent') {
       return [
-        { name: "Accueil", path: "/" },
         { name: "Castings", path: "/castings" },
         { name: "Mes Candidatures", path: "/my-applications" },
-        { name: "Messages", path: "/messages" }
+        { name: "Messages", path: "/messages" },
+        { name: "Profil", path: "/profile" }
       ];
     }
 
     if (user?.role === 'producer') {
       return [
-        { name: "Accueil", path: "/" },
+        { name: "Dashboard", path: "/producer-dashboard" },
         { name: "Mes Castings", path: "/producer-dashboard" },
-        { name: "Publier un Casting", path: "/create-casting" },
-        { name: "Recherche Talents", path: "/talent-search" },
-        { name: "Facturation", path: "/billing" }
+        { name: "Créer un Casting", path: "/create-casting" },
+        { name: "Candidatures Reçues", path: "/my-applications" },
+        { name: "Messages", path: "/messages" }
       ];
     }
 
     return [];
   };
+
+  const logoLink = isAuthenticated
+    ? user?.role === 'producer' ? '/producer-dashboard' : '/castings'
+    : '/';
 
   const navItems = getNavItems();
 
@@ -76,7 +80,7 @@ const Header = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 group">
+          <Link to={logoLink} className="flex items-center space-x-2 group">
             <div className="p-2 bg-gradient-hero rounded-lg shadow-elegant group-hover:shadow-glow transition-all duration-300">
               <Star className="h-6 w-6 text-primary-foreground" />
             </div>
