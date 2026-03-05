@@ -127,6 +127,11 @@ const ProducerDashboard = () => {
               <TabsTrigger value="applications">
                 Candidatures ({applications.length})
               </TabsTrigger>
+              <TabsTrigger value="manage" asChild>
+                <Link to="/applications-management" className="flex items-center gap-1">
+                  <FileText className="h-4 w-4" /> Gérer les candidatures
+                </Link>
+              </TabsTrigger>
               <TabsTrigger value="analytics">Statistiques</TabsTrigger>
             </TabsList>
 
