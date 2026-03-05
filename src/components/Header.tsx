@@ -36,6 +36,7 @@ const Header = () => {
       return [
         { name: "Castings", path: "/castings" },
         { name: "Mes Candidatures", path: "/my-applications" },
+        { name: "Mon Abonnement", path: "/subscription" },
         { name: "Messages", path: "/messages" },
         { name: "Profil", path: "/profile" }
       ];
