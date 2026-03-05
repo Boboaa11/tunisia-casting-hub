@@ -1,204 +1,142 @@
-import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Star, Zap, Crown, ArrowRight } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Crown, CreditCard, RefreshCw, XCircle, AlertTriangle,
+  Calendar, DollarSign, CheckCircle, Megaphone, Send,
+  ClipboardList, Bell, ArrowRight, Shield
+} from "lucide-react";
 import Layout from "@/components/Layout";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
 
 const Subscription = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const { user, setSubscription, redirectAfterAuth } = useAuth();
-  const { toast } = useToast();
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const { user } = useAuth();
 
-  const castingId = searchParams.get('castingId');
-  const showMessage = searchParams.get('message') === 'subscription_required';
-
-  const plans = [
-    {
-      id: "monthly",
-      name: "Mensuel",
-      price: "29",
-      period: "/mois",
-      description: "Parfait pour commencer",
-      features: [
-        "Accès illimité aux castings",
-        "Postuler à tous les rôles",
-        "Profil visible par les producteurs",
-        "Notifications en temps réel",
-        "Support par email"
-      ],
-      popular: false
-    },
-    {
-      id: "quarterly",
-      name: "Trimestriel",
-      price: "69",
-      period: "/3 mois",
-      originalPrice: "87",
-      description: "Économisez 20%",
-      features: [
-        "Tout du plan Mensuel",
-        "Profil mis en avant",
-        "Statistiques de visibilité",
-        "Badge vérifié",
-        "Support prioritaire"
-      ],
-      popular: true
-    },
-    {
-      id: "yearly",
-      name: "Annuel",
-      price: "199",
-      period: "/an",
-      originalPrice: "348",
-      description: "Meilleure valeur - Économisez 43%",
-      features: [
-        "Tout du plan Trimestriel",
-        "Profil en tête des recherches",
-        "Accès anticipé aux castings",
-        "Coaching carrière mensuel",
-        "Support téléphonique VIP"
-      ],
-      popular: false
-    }
-  ];
-
-  const handleSubscribe = async (planId: string) => {
-    setSelectedPlan(planId);
-    setIsProcessing(true);
-
-    // Simulate payment processing
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    setSubscription(true);
-    setIsProcessing(false);
-
-    toast({
-      title: "Abonnement activé !",
-      description: "Bienvenue dans la communauté Tunisia Casting. Vous pouvez maintenant postuler à tous les castings.",
-    });
-
-    // Redirect to casting if there was one
-    if (castingId) {
-      navigate(`/castings?apply=${castingId}`);
-    } else if (redirectAfterAuth) {
-      navigate(redirectAfterAuth);
-    } else {
-      navigate('/castings');
-    }
+  // Mock subscription data based on user state
+  const isActive = user?.hasSubscription ?? false;
+  const plan = {
+    name: isActive ? "Talent Mensuel" : "Aucun abonnement",
+    price: isActive ? "29 TND/mois" : "—",
+    startDate: isActive ? "15 Janvier 2026" : "—",
+    nextBilling: isActive ? "15 Avril 2026" : "—",
   };
+
+  const benefits = [
+    { icon: Send, label: "Postuler à des castings illimités" },
+    { icon: Megaphone, label: "Contacter les producteurs directement" },
+    { icon: ClipboardList, label: "Suivre vos candidatures en temps réel" },
+    { icon: Bell, label: "Recevoir des alertes casting personnalisées" },
+  ];
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-card py-12 px-4">
-        <div className="container mx-auto max-w-6xl">
-          {/* Header */}
-          <div className="text-center mb-12 animate-fade-in">
-            {showMessage && (
-              <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg inline-block">
-                <p className="text-amber-800 font-medium">
-                  🎬 Un abonnement est requis pour postuler aux castings
-                </p>
-              </div>
-            )}
-            
-            <div className="flex justify-center mb-4">
-              <div className="p-3 bg-gradient-hero rounded-xl shadow-glow">
-                <Crown className="h-8 w-8 text-primary-foreground" />
-              </div>
+      <div className="min-h-screen bg-gradient-card py-10 px-4">
+        <div className="container mx-auto max-w-3xl space-y-8">
+
+          {/* Page Header */}
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-gradient-hero rounded-xl shadow-glow">
+              <Crown className="h-6 w-6 text-primary-foreground" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
-              Devenez membre Talent
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Accédez à des centaines de castings exclusifs et lancez votre carrière dans l'industrie du divertissement tunisienne
-            </p>
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Mon Abonnement</h1>
+              <p className="text-muted-foreground text-sm">Gérez votre adhésion et vos avantages</p>
+            </div>
           </div>
 
-          {/* Benefits */}
-          <div className="grid md:grid-cols-4 gap-4 mb-12">
-            {[
-              { icon: Zap, text: "Candidatures illimitées" },
-              { icon: Star, text: "Profil premium" },
-              { icon: Check, text: "Notifications instantanées" },
-              { icon: Crown, text: "Support prioritaire" }
-            ].map((benefit, index) => (
-              <div key={index} className="flex items-center gap-3 p-4 bg-card rounded-lg shadow-card">
-                <benefit.icon className="h-5 w-5 text-primary" />
-                <span className="text-sm font-medium text-foreground">{benefit.text}</span>
+          {/* Expired Banner */}
+          {!isActive && (
+            <Alert className="border-destructive/40 bg-destructive/5">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              <AlertDescription className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ml-2">
+                <span className="text-destructive font-medium">
+                  Votre abonnement a expiré. Renouvelez pour continuer à postuler aux castings.
+                </span>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => navigate("/subscription/plans")}
+                  className="shrink-0"
+                >
+                  Renouveler <ArrowRight className="h-4 w-4 ml-1" />
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Main Subscription Card */}
+          <Card className="shadow-elegant">
+            <CardHeader className="flex flex-row items-start justify-between pb-2">
+              <div className="space-y-1">
+                <CardTitle className="text-xl">{plan.name}</CardTitle>
+                <p className="text-sm text-muted-foreground">Détails de votre abonnement actuel</p>
               </div>
-            ))}
-          </div>
-
-          {/* Plans */}
-          <div className="grid md:grid-cols-3 gap-6 mb-12">
-            {plans.map((plan) => (
-              <Card 
-                key={plan.id} 
-                className={`relative shadow-card hover:shadow-elegant transition-all duration-300 ${
-                  plan.popular ? 'border-primary border-2 scale-105' : ''
-                }`}
-              >
-                {plan.popular && (
-                  <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary">
-                    Le plus populaire
-                  </Badge>
-                )}
-                <CardHeader className="text-center pb-2">
-                  <CardTitle className="text-xl text-foreground">{plan.name}</CardTitle>
-                  <p className="text-sm text-muted-foreground">{plan.description}</p>
-                </CardHeader>
-                <CardContent className="text-center">
-                  <div className="mb-6">
-                    {plan.originalPrice && (
-                      <span className="text-lg text-muted-foreground line-through mr-2">
-                        {plan.originalPrice} TND
-                      </span>
-                    )}
-                    <span className="text-4xl font-bold text-foreground">{plan.price}</span>
-                    <span className="text-muted-foreground"> TND{plan.period}</span>
+              {isActive ? (
+                <Badge className="bg-green-600 hover:bg-green-600 text-white gap-1.5 px-3 py-1">
+                  <Shield className="h-3.5 w-3.5" /> Pro Member
+                </Badge>
+              ) : (
+                <Badge variant="destructive" className="gap-1.5 px-3 py-1">
+                  <XCircle className="h-3.5 w-3.5" /> Expiré
+                </Badge>
+              )}
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Info Grid */}
+              <div className="grid sm:grid-cols-2 gap-4">
+                {[
+                  { icon: CheckCircle, label: "Statut", value: isActive ? "Actif" : "Expiré", color: isActive ? "text-green-600" : "text-destructive" },
+                  { icon: DollarSign, label: "Prix", value: plan.price, color: "text-foreground" },
+                  { icon: Calendar, label: "Date de début", value: plan.startDate, color: "text-foreground" },
+                  { icon: Calendar, label: "Prochaine facturation", value: plan.nextBilling, color: "text-foreground" },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                    <item.icon className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">{item.label}</p>
+                      <p className={`font-semibold text-sm ${item.color}`}>{item.value}</p>
+                    </div>
                   </div>
+                ))}
+              </div>
 
-                  <ul className="space-y-3 mb-6 text-left">
-                    {plan.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-sm">
-                        <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-muted-foreground">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
+              {/* Action Buttons */}
+              <div className="flex flex-wrap gap-3 pt-2 border-t">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <CreditCard className="h-4 w-4" /> Modifier le paiement
+                </Button>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <RefreshCw className="h-4 w-4" /> Changer de plan
+                </Button>
+                <Button variant="ghost" size="sm" className="gap-2 text-destructive hover:text-destructive">
+                  <XCircle className="h-4 w-4" /> Annuler l'abonnement
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
 
-                  <Button
-                    variant={plan.popular ? "hero" : "outline"}
-                    className="w-full"
-                    onClick={() => handleSubscribe(plan.id)}
-                    disabled={isProcessing && selectedPlan === plan.id}
-                  >
-                    {isProcessing && selectedPlan === plan.id ? (
-                      "Traitement en cours..."
-                    ) : (
-                      <>
-                        Choisir ce plan
-                        <ArrowRight className="h-4 w-4 ml-2" />
-                      </>
-                    )}
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {/* Benefits Card */}
+          <Card className="shadow-card">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg">Avantages de l'abonnement</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid sm:grid-cols-2 gap-3">
+                {benefits.map((b, i) => (
+                  <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-muted/40">
+                    <div className="p-2 rounded-md bg-primary/10">
+                      <b.icon className="h-4 w-4 text-primary" />
+                    </div>
+                    <span className="text-sm font-medium text-foreground">{b.label}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
-          {/* Trust indicators */}
-          <div className="text-center text-muted-foreground">
-            <p className="text-sm mb-2">🔒 Paiement sécurisé • Annulation à tout moment • Satisfait ou remboursé 14 jours</p>
-            <p className="text-xs">Plus de 2,000 talents nous font déjà confiance</p>
-          </div>
         </div>
       </div>
     </Layout>
