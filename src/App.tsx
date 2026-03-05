@@ -22,6 +22,7 @@ import Profile from "./pages/Profile";
 import TalentSearch from "./pages/TalentSearch";
 import Billing from "./pages/Billing";
 import Subscription from "./pages/Subscription";
+import ApplicationManagement from "./pages/ApplicationManagement";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,7 @@ const App = () => (
               <Route path="/talent-search" element={<TalentSearch />} />
               <Route path="/billing" element={<Billing />} />
               <Route path="/subscription" element={<Subscription />} />
+              <Route path="/applications-management" element={<ApplicationManagement />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
