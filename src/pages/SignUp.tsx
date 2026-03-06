@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useCallback, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,11 +18,13 @@ import PasswordStrengthBar from "@/components/PasswordStrengthBar";
  
 const SignUp = () => {
    const navigate = useNavigate();
+   const location = useLocation();
    const { signup, redirectAfterAuth, setRedirectAfterAuth } = useAuth();
    const { toast } = useToast();
    
-   const [step, setStep] = useState<'choose' | 'form'>('choose');
-   const [accountType, setAccountType] = useState<AccountType>(null);
+   const locationState = location.state as { accountType?: AccountType } | null;
+   const [step, setStep] = useState<'choose' | 'form'>(locationState?.accountType ? 'form' : 'choose');
+   const [accountType, setAccountType] = useState<AccountType>(locationState?.accountType || null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
    
