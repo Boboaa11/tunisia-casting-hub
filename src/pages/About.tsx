@@ -8,52 +8,52 @@ const About = () => {
   const values = [
     {
       icon: Heart,
-      title: "Passion for Arts",
-      description: "We believe in the transformative power of entertainment and the arts in Tunisian culture."
+      title: "Passion pour les Arts",
+      description: "Nous croyons au pouvoir transformateur du divertissement et des arts dans la culture tunisienne."
     },
     {
       icon: Target,
-      title: "Connecting Opportunities",
-      description: "Our mission is to bridge the gap between talent and casting directors efficiently."
+      title: "Connecter les Opportunités",
+      description: "Notre mission est de combler le fossé entre les talents et les directeurs de casting efficacement."
     },
     {
       icon: Users,
-      title: "Community First",
-      description: "Building a supportive community where talent can grow and thrive together."
+      title: "Communauté d'Abord",
+      description: "Construire une communauté solidaire où les talents peuvent grandir et s'épanouir ensemble."
     },
     {
       icon: Star,
       title: "Excellence",
-      description: "We strive for the highest standards in service and user experience."
+      description: "Nous visons les plus hauts standards en matière de service et d'expérience utilisateur."
     }
   ];
 
   const team = [
     {
       name: "Amira Ben Salem",
-      role: "Founder & CEO",
-      bio: "Former casting director with 15 years of experience in Tunisian cinema and television.",
+      role: "Fondatrice & PDG",
+      bio: "Ancienne directrice de casting avec 15 ans d'expérience dans le cinéma et la télévision tunisiens.",
       image: "https://images.unsplash.com/photo-1494790108755-2616b612b829?w=300&h=300&fit=crop&crop=face"
     },
     {
       name: "Karim Mansouri",
-      role: "Head of Technology",
-      bio: "Tech entrepreneur passionate about using technology to support creative industries.",
+      role: "Directeur Technologie",
+      bio: "Entrepreneur tech passionné par l'utilisation de la technologie au service des industries créatives.",
       image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=300&fit=crop&crop=face"
     },
     {
       name: "Leila Gharbi",
-      role: "Industry Relations",
-      bio: "Veteran producer with extensive connections in North African entertainment industry.",
+      role: "Relations Industrie",
+      bio: "Productrice chevronnée avec un vaste réseau dans l'industrie du divertissement nord-africain.",
       image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=300&fit=crop&crop=face"
     }
   ];
 
   const stats = [
-    { icon: Users, label: "Registered Talent", value: "500+" },
-    { icon: Globe, label: "Productions Connected", value: "80+" },
-    { icon: Award, label: "Successful Castings", value: "200+" },
-    { icon: Star, label: "Industry Partners", value: "50+" }
+    { icon: Users, label: "Talents Inscrits", value: "500+" },
+    { icon: Globe, label: "Productions Connectées", value: "80+" },
+    { icon: Award, label: "Castings Réussis", value: "200+" },
+    { icon: Star, label: "Partenaires Industrie", value: "50+" }
   ];
 
   return (
@@ -63,11 +63,11 @@ const About = () => {
         <section className="py-20 bg-gradient-hero text-primary-foreground">
           <div className="container mx-auto px-4 text-center animate-fade-in">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              About Tunisia Casting
+              À Propos de Tunisia Casting
             </h1>
             <p className="text-xl md:text-2xl max-w-3xl mx-auto text-primary-foreground/90">
-              Connecting Tunisia's creative talent with entertainment opportunities, 
-              one casting call at a time.
+              Connecter les talents créatifs de la Tunisie aux opportunités du divertissement, 
+              un casting à la fois.
             </p>
           </div>
         </section>
@@ -76,13 +76,13 @@ const About = () => {
         <section className="py-20">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center mb-16 animate-slide-up">
-              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-foreground">Our Mission</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-foreground">Notre Mission</h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Tunisia Casting was born from a simple yet powerful vision: to democratize access to 
-                entertainment opportunities in Tunisia. We recognized that talented individuals often 
-                struggled to find casting calls, while production companies had difficulty reaching 
-                the right talent. Our platform bridges this gap, creating a thriving ecosystem where 
-                creativity meets opportunity.
+                Tunisia Casting est né d'une vision simple mais puissante : démocratiser l'accès aux 
+                opportunités du divertissement en Tunisie. Nous avons constaté que les individus talentueux 
+                avaient souvent du mal à trouver des appels de casting, tandis que les sociétés de production 
+                peinaient à atteindre les bons talents. Notre plateforme comble ce fossé, créant un écosystème 
+                florissant où la créativité rencontre l'opportunité.
               </p>
             </div>
 
@@ -105,7 +105,7 @@ const About = () => {
         {/* Stats Section */}
         <section className="py-20 bg-primary text-primary-foreground">
           <div className="container mx-auto px-4">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Our Impact</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Notre Impact</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {stats.map((stat, index) => (
                 <div key={index} className="text-center animate-slide-up" style={{animationDelay: `${index * 0.1}s`}}>
@@ -124,9 +124,9 @@ const About = () => {
         <section className="py-20">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16 animate-slide-up">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">Meet Our Team</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">Notre Équipe</h2>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                Passionate professionals dedicated to supporting Tunisia's entertainment industry
+                Des professionnels passionnés dédiés au soutien de l'industrie du divertissement tunisien
               </p>
             </div>
 
@@ -153,24 +153,24 @@ const About = () => {
         <section className="py-20 bg-gradient-card">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto animate-slide-up">
-              <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center text-foreground">Our Story</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center text-foreground">Notre Histoire</h2>
               <div className="prose prose-lg mx-auto text-muted-foreground">
                 <p className="text-lg leading-relaxed mb-6">
-                  Founded in 2023, Tunisia Casting emerged from the personal experiences of our founder, 
-                  Amira Ben Salem, who witnessed firsthand the challenges faced by both talent and 
-                  casting directors in Tunisia's growing entertainment industry.
+                  Fondée en 2023, Tunisia Casting est née des expériences personnelles de notre fondatrice, 
+                  Amira Ben Salem, qui a été témoin des défis auxquels sont confrontés tant les talents que 
+                  les directeurs de casting dans l'industrie du divertissement en pleine croissance en Tunisie.
                 </p>
                 <p className="text-lg leading-relaxed mb-6">
-                  After years of working in traditional casting methods, Amira realized that technology 
-                  could revolutionize how casting works in Tunisia. She assembled a team of industry 
-                  veterans and tech innovators to create a platform that would serve the unique needs 
-                  of our local entertainment ecosystem.
+                  Après des années de travail avec les méthodes de casting traditionnelles, Amira a réalisé que la technologie 
+                  pouvait révolutionner le fonctionnement du casting en Tunisie. Elle a rassemblé une équipe de 
+                  vétérans de l'industrie et d'innovateurs technologiques pour créer une plateforme qui répondrait aux besoins 
+                  uniques de notre écosystème local du divertissement.
                 </p>
                 <p className="text-lg leading-relaxed">
-                  Today, Tunisia Casting is proud to be the leading platform connecting talent with 
-                  opportunities across television, film, theater, and commercial productions throughout 
-                  Tunisia and beyond. We're committed to supporting the growth of our vibrant creative 
-                  community.
+                  Aujourd'hui, Tunisia Casting est fière d'être la plateforme leader connectant les talents aux 
+                  opportunités dans la télévision, le cinéma, le théâtre et les productions commerciales à travers 
+                  la Tunisie et au-delà. Nous nous engageons à soutenir la croissance de notre vibrante communauté 
+                  créative.
                 </p>
               </div>
             </div>
@@ -180,16 +180,16 @@ const About = () => {
         {/* CTA Section */}
         <section className="py-20 bg-gradient-hero text-primary-foreground">
           <div className="container mx-auto px-4 text-center animate-slide-up">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to Join Our Community?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">Prêt à Rejoindre Notre Communauté ?</h2>
             <p className="text-xl mb-8 text-primary-foreground/90 max-w-2xl mx-auto">
-              Whether you're a talented performer or a casting director, Tunisia Casting is here to help you succeed.
+              Que vous soyez un artiste talentueux ou un directeur de casting, Tunisia Casting est là pour vous aider à réussir.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Button variant="premium" size="lg" asChild className="text-lg px-8 py-6 bg-white text-primary hover:bg-gray-100">
-                <Link to="/signup">Join as Talent</Link>
+                <Link to="/signup">Rejoindre comme Talent</Link>
               </Button>
               <Button variant="outline" size="lg" asChild className="text-lg px-8 py-6 border-white text-white hover:bg-white hover:text-primary">
-                <Link to="/contact">Contact Us</Link>
+                <Link to="/contact">Contactez-nous</Link>
               </Button>
             </div>
           </div>

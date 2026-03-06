@@ -36,11 +36,11 @@ const Castings = () => {
   }, [searchParams, isAuthenticated, user, castings, navigate]);
 
   const categories = [
-    { id: "all", label: "All Categories", icon: null },
-    { id: "tv", label: "TV Series", icon: Tv },
+    { id: "all", label: "Toutes les Catégories", icon: null },
+    { id: "tv", label: "Séries TV", icon: Tv },
     { id: "film", label: "Film", icon: Film },
-    { id: "theater", label: "Theater", icon: Theater },
-    { id: "commercial", label: "Commercial", icon: null }
+    { id: "theater", label: "Théâtre", icon: Theater },
+    { id: "commercial", label: "Publicité", icon: null }
   ];
 
   const filteredCastings = castings.filter(casting => {
@@ -78,17 +78,17 @@ const Castings = () => {
 
   const getRoleType = (roleName: string): string => {
     const lower = roleName.toLowerCase();
-    if (lower.includes('lead') || lower.includes('principal')) return 'Lead';
-    if (lower.includes('supporting')) return 'Supporting';
-    if (lower.includes('extra') || lower.includes('figurant')) return 'Extra';
-    return 'Role';
+    if (lower.includes('lead') || lower.includes('principal')) return 'Principal';
+    if (lower.includes('supporting') || lower.includes('secondaire')) return 'Secondaire';
+    if (lower.includes('extra') || lower.includes('figurant')) return 'Figurant';
+    return 'Rôle';
   };
 
   const getRoleTypeBadgeClass = (type: string): string => {
     switch (type) {
-      case 'Lead': return 'bg-primary/10 text-primary border-primary/20';
-      case 'Supporting': return 'bg-secondary/30 text-secondary-foreground border-secondary/40';
-      case 'Extra': return 'bg-muted text-muted-foreground border-border';
+      case 'Principal': return 'bg-primary/10 text-primary border-primary/20';
+      case 'Secondaire': return 'bg-secondary/30 text-secondary-foreground border-secondary/40';
+      case 'Figurant': return 'bg-muted text-muted-foreground border-border';
       default: return 'bg-accent/20 text-accent-foreground border-accent/30';
     }
   };
@@ -97,10 +97,10 @@ const Castings = () => {
     if (!dateStr) return '';
     const diff = Date.now() - new Date(dateStr).getTime();
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    if (days === 0) return "Today";
-    if (days === 1) return "1 day ago";
-    if (days < 30) return `${days} days ago`;
-    return `${Math.floor(days / 30)}mo ago`;
+    if (days === 0) return "Aujourd'hui";
+    if (days === 1) return "Il y a 1 jour";
+    if (days < 30) return `Il y a ${days} jours`;
+    return `Il y a ${Math.floor(days / 30)} mois`;
   };
 
   return (
@@ -110,10 +110,10 @@ const Castings = () => {
           {/* Header */}
           <div className="text-center mb-12 animate-fade-in">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
-              Current Casting Calls
+              Appels de Casting en Cours
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Discover exciting opportunities in Tunisia's entertainment industry
+              Découvrez des opportunités passionnantes dans l'industrie du divertissement tunisien
             </p>
           </div>
 
@@ -124,7 +124,7 @@ const Castings = () => {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="text"
-                  placeholder="Search castings, productions, or locations..."
+                  placeholder="Rechercher castings, productions ou lieux..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 shadow-card"
@@ -169,7 +169,7 @@ const Castings = () => {
                     <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                       {casting.isPaid && (
                         <Badge variant="secondary" className="bg-accent/20 text-accent-foreground border border-accent/30 text-xs gap-1">
-                          <Star className="h-3 w-3" /> Featured
+                          <Star className="h-3 w-3" /> En vedette
                         </Badge>
                       )}
                       <Badge variant="outline" className="text-xs gap-1 border-border">
@@ -210,8 +210,8 @@ const Castings = () => {
                         )}
                         <div className="flex items-center text-muted-foreground">
                           <Clock className="h-3.5 w-3.5 mr-1.5 text-primary flex-shrink-0" />
-                          <span className="truncate">
-                            {casting.createdAt ? getTimeAgo(casting.createdAt) : `Deadline: ${new Date(casting.deadline).toLocaleDateString()}`}
+                           <span className="truncate">
+                            {casting.createdAt ? getTimeAgo(casting.createdAt) : `Date limite : ${new Date(casting.deadline).toLocaleDateString('fr-FR')}`}
                           </span>
                         </div>
                       </div>
@@ -222,7 +222,7 @@ const Castings = () => {
                         className="gap-1.5 text-xs"
                         onClick={() => navigate(`/casting/${casting.id}`)}
                       >
-                        View All Roles
+                        Voir Tous les Rôles
                         <ChevronRight className="h-3.5 w-3.5" />
                       </Button>
                     </div>
@@ -231,7 +231,7 @@ const Castings = () => {
                     <div className="lg:w-[340px] xl:w-[380px] bg-muted/30 p-4 flex flex-col gap-2.5">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Available Roles
+                          Rôles Disponibles
                         </span>
                         <span className="text-xs text-muted-foreground">
                           <Users className="h-3 w-3 inline mr-1" />
@@ -272,7 +272,7 @@ const Castings = () => {
                               onClick={(e) => { e.stopPropagation(); handleApply(casting, role); }}
                               disabled={user?.role === 'producer'}
                             >
-                              Apply
+                              Postuler
                             </Button>
                           </div>
                         );
@@ -283,12 +283,12 @@ const Castings = () => {
                           className="text-xs text-primary hover:text-primary-glow font-medium text-center py-1 transition-colors"
                           onClick={() => navigate(`/casting/${casting.id}`)}
                         >
-                          + {extraRoles} more role{extraRoles > 1 ? 's' : ''}
+                          + {extraRoles} autre{extraRoles > 1 ? 's' : ''} rôle{extraRoles > 1 ? 's' : ''}
                         </button>
                       )}
 
                       {(!casting.roles || casting.roles.length === 0) && (
-                        <p className="text-xs text-muted-foreground text-center py-4">No roles listed yet</p>
+                        <p className="text-xs text-muted-foreground text-center py-4">Aucun rôle listé pour le moment</p>
                       )}
                     </div>
                   </div>
@@ -299,9 +299,9 @@ const Castings = () => {
 
           {filteredCastings.length === 0 && (
             <div className="text-center py-12">
-              <p className="text-lg text-muted-foreground">No castings found matching your criteria.</p>
+              <p className="text-lg text-muted-foreground">Aucun casting trouvé correspondant à vos critères.</p>
               <Button variant="outline" className="mt-4" onClick={() => { setSearchTerm(""); setSelectedCategory("all"); }}>
-                Clear Filters
+                Réinitialiser les filtres
               </Button>
             </div>
           )}
