@@ -20,184 +20,90 @@ const Contact = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
     console.log("Contact form submitted:", formData);
-    // Show success message or redirect
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSelectChange = (value: string) => {
-    setFormData({
-      ...formData,
-      category: value
-    });
+    setFormData({ ...formData, category: value });
   };
 
   const contactInfo = [
-    {
-      icon: MapPin,
-      title: "Office Address",
-      details: ["Tunis, Tunisia", "Avenue Habib Bourguiba"],
-      color: "text-blue-600"
-    },
-    {
-      icon: Phone,
-      title: "Phone",
-      details: ["+216 71 XXX XXX", "Monday - Friday, 9 AM - 6 PM"],
-      color: "text-green-600"
-    },
-    {
-      icon: Mail,
-      title: "Email",
-      details: ["info@tunisiacasting.com", "support@tunisiacasting.com"],
-      color: "text-purple-600"
-    },
-    {
-      icon: Clock,
-      title: "Business Hours",
-      details: ["Monday - Friday: 9:00 AM - 6:00 PM", "Saturday: 10:00 AM - 4:00 PM"],
-      color: "text-orange-600"
-    }
+    { icon: MapPin, title: "Adresse", details: ["Tunis, Tunisie", "Avenue Habib Bourguiba"], color: "text-blue-600" },
+    { icon: Phone, title: "Téléphone", details: ["+216 71 XXX XXX", "Lundi - Vendredi, 9h - 18h"], color: "text-green-600" },
+    { icon: Mail, title: "Email", details: ["info@tunisiacasting.com", "support@tunisiacasting.com"], color: "text-purple-600" },
+    { icon: Clock, title: "Horaires d'ouverture", details: ["Lundi - Vendredi : 9h00 - 18h00", "Samedi : 10h00 - 16h00"], color: "text-orange-600" }
   ];
 
   const faqs = [
-    {
-      question: "How do I apply for casting calls?",
-      answer: "Once you create an account and complete your profile, you can browse available castings and apply directly through the platform."
-    },
-    {
-      question: "Is there a fee to join Tunisia Casting?",
-      answer: "Basic membership is free for talent. We offer premium features for enhanced visibility and additional tools."
-    },
-    {
-      question: "How do casting directors post opportunities?",
-      answer: "Casting directors can contact us to set up an account and post their casting calls. We verify all production companies before listing."
-    },
-    {
-      question: "What types of projects are listed?",
-      answer: "We feature casting calls for TV series, films, theater productions, commercials, music videos, and other entertainment projects."
-    }
+    { question: "Comment postuler aux appels de casting ?", answer: "Une fois votre compte créé et votre profil complété, vous pouvez parcourir les castings disponibles et postuler directement via la plateforme." },
+    { question: "L'inscription à Tunisia Casting est-elle payante ?", answer: "L'adhésion de base est gratuite pour les talents. Nous proposons des fonctionnalités premium pour une visibilité accrue et des outils supplémentaires." },
+    { question: "Comment les directeurs de casting publient-ils des opportunités ?", answer: "Les directeurs de casting peuvent nous contacter pour créer un compte et publier leurs appels de casting. Nous vérifions toutes les sociétés de production avant publication." },
+    { question: "Quels types de projets sont listés ?", answer: "Nous proposons des appels de casting pour les séries TV, films, productions théâtrales, publicités, clips musicaux et autres projets de divertissement." }
   ];
 
   return (
     <Layout>
       <div className="min-h-screen bg-gradient-card py-8">
         <div className="container mx-auto px-4">
-          {/* Header */}
           <div className="text-center mb-12 animate-fade-in">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
-              Get In Touch
-            </h1>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">Contactez-nous</h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
+              Vous avez des questions ? Nous serions ravis de vous entendre. Envoyez-nous un message et nous vous répondrons dès que possible.
             </p>
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8">
-            {/* Contact Form */}
             <div className="lg:col-span-2">
               <Card className="shadow-elegant bg-card animate-slide-up">
                 <CardHeader>
-                  <CardTitle className="text-2xl text-foreground">Send us a Message</CardTitle>
+                  <CardTitle className="text-2xl text-foreground">Envoyez-nous un Message</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="name" className="text-foreground">Full Name</Label>
-                        <Input
-                          id="name"
-                          name="name"
-                          type="text"
-                          required
-                          value={formData.name}
-                          onChange={handleChange}
-                          placeholder="Your full name"
-                          className="shadow-card"
-                        />
+                        <Label htmlFor="name" className="text-foreground">Nom Complet</Label>
+                        <Input id="name" name="name" type="text" required value={formData.name} onChange={handleChange} placeholder="Votre nom complet" className="shadow-card" />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="email" className="text-foreground">Email Address</Label>
-                        <Input
-                          id="email"
-                          name="email"
-                          type="email"
-                          required
-                          value={formData.email}
-                          onChange={handleChange}
-                          placeholder="your.email@example.com"
-                          className="shadow-card"
-                        />
+                        <Label htmlFor="email" className="text-foreground">Adresse Email</Label>
+                        <Input id="email" name="email" type="email" required value={formData.email} onChange={handleChange} placeholder="votre.email@exemple.com" className="shadow-card" />
                       </div>
                     </div>
-
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="phone" className="text-foreground">Phone Number</Label>
-                        <Input
-                          id="phone"
-                          name="phone"
-                          type="tel"
-                          value={formData.phone}
-                          onChange={handleChange}
-                          placeholder="+216 XX XXX XXX"
-                          className="shadow-card"
-                        />
+                        <Label htmlFor="phone" className="text-foreground">Numéro de Téléphone</Label>
+                        <Input id="phone" name="phone" type="tel" value={formData.phone} onChange={handleChange} placeholder="+216 XX XXX XXX" className="shadow-card" />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="category" className="text-foreground">Inquiry Type</Label>
+                        <Label htmlFor="category" className="text-foreground">Type de Demande</Label>
                         <Select onValueChange={handleSelectChange}>
-                          <SelectTrigger className="shadow-card">
-                            <SelectValue placeholder="Select category" />
-                          </SelectTrigger>
+                          <SelectTrigger className="shadow-card"><SelectValue placeholder="Sélectionner une catégorie" /></SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="general">General Inquiry</SelectItem>
-                            <SelectItem value="talent">Talent Support</SelectItem>
-                            <SelectItem value="casting">Casting Director</SelectItem>
-                            <SelectItem value="technical">Technical Support</SelectItem>
-                            <SelectItem value="partnership">Partnership</SelectItem>
-                            <SelectItem value="press">Press & Media</SelectItem>
+                            <SelectItem value="general">Demande Générale</SelectItem>
+                            <SelectItem value="talent">Support Talent</SelectItem>
+                            <SelectItem value="casting">Directeur de Casting</SelectItem>
+                            <SelectItem value="technical">Support Technique</SelectItem>
+                            <SelectItem value="partnership">Partenariat</SelectItem>
+                            <SelectItem value="press">Presse & Médias</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                     </div>
-
                     <div className="space-y-2">
-                      <Label htmlFor="subject" className="text-foreground">Subject</Label>
-                      <Input
-                        id="subject"
-                        name="subject"
-                        type="text"
-                        required
-                        value={formData.subject}
-                        onChange={handleChange}
-                        placeholder="Brief subject of your message"
-                        className="shadow-card"
-                      />
+                      <Label htmlFor="subject" className="text-foreground">Sujet</Label>
+                      <Input id="subject" name="subject" type="text" required value={formData.subject} onChange={handleChange} placeholder="Objet de votre message" className="shadow-card" />
                     </div>
-
                     <div className="space-y-2">
                       <Label htmlFor="message" className="text-foreground">Message</Label>
-                      <Textarea
-                        id="message"
-                        name="message"
-                        required
-                        value={formData.message}
-                        onChange={handleChange}
-                        placeholder="Please describe your inquiry in detail..."
-                        rows={6}
-                        className="shadow-card"
-                      />
+                      <Textarea id="message" name="message" required value={formData.message} onChange={handleChange} placeholder="Décrivez votre demande en détail..." rows={6} className="shadow-card" />
                     </div>
-
                     <Button type="submit" variant="hero" size="lg" className="w-full">
-                      Send Message
+                      Envoyer le Message
                       <Send className="h-4 w-4 ml-2" />
                     </Button>
                   </form>
@@ -205,9 +111,7 @@ const Contact = () => {
               </Card>
             </div>
 
-            {/* Contact Information */}
             <div className="space-y-6">
-              {/* Contact Info Cards */}
               <div className="space-y-4 animate-slide-up">
                 {contactInfo.map((info, index) => (
                   <Card key={index} className="shadow-card bg-card">
@@ -228,10 +132,9 @@ const Contact = () => {
                 ))}
               </div>
 
-              {/* FAQ Section */}
               <Card className="shadow-elegant bg-card animate-slide-up">
                 <CardHeader>
-                  <CardTitle className="text-lg text-foreground">Frequently Asked Questions</CardTitle>
+                  <CardTitle className="text-lg text-foreground">Questions Fréquentes</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {faqs.map((faq, index) => (
@@ -243,16 +146,15 @@ const Contact = () => {
                 </CardContent>
               </Card>
 
-              {/* Quick Links */}
               <Card className="shadow-card bg-gradient-hero text-primary-foreground animate-slide-up">
                 <CardContent className="p-6 text-center">
-                  <h3 className="font-semibold mb-4">Need Immediate Help?</h3>
+                  <h3 className="font-semibold mb-4">Besoin d'Aide Immédiate ?</h3>
                   <div className="space-y-3">
                     <Button variant="premium" className="w-full bg-white text-primary hover:bg-gray-100">
-                      View Support Center
+                      Centre d'Aide
                     </Button>
                     <Button variant="outline" className="w-full border-white text-white hover:bg-white hover:text-primary">
-                      Check System Status
+                      État du Système
                     </Button>
                   </div>
                 </CardContent>

@@ -27,26 +27,26 @@ const Index = () => {
   const features = [
     {
       icon: Search,
-      title: "Find Opportunities",
-      description: "Browse casting calls for TV, cinema, and theater productions across Tunisia."
+      title: "Trouver des Opportunités",
+      description: "Parcourez les appels de casting pour les productions TV, cinéma et théâtre en Tunisie."
     },
     {
       icon: Users,
-      title: "Connect with Talent",
-      description: "Join a community of actors, models, and entertainment professionals."
+      title: "Connecter avec les Talents",
+      description: "Rejoignez une communauté d'acteurs, de mannequins et de professionnels du divertissement."
     },
     {
       icon: Star,
-      title: "Launch Your Career",
-      description: "Take the first step towards your dreams in the entertainment industry."
+      title: "Lancer Votre Carrière",
+      description: "Faites le premier pas vers vos rêves dans l'industrie du divertissement."
     }
   ];
 
   const stats = [
-    { icon: Film, label: "TV Productions", value: "50+" },
-    { icon: Camera, label: "Film Projects", value: "30+" },
-    { icon: Megaphone, label: "Active Castings", value: "25+" },
-    { icon: Users, label: "Registered Talent", value: "500+" }
+    { icon: Film, label: "Productions TV", value: "50+" },
+    { icon: Camera, label: "Projets Cinéma", value: "30+" },
+    { icon: Megaphone, label: "Castings Actifs", value: "25+" },
+    { icon: Users, label: "Talents Inscrits", value: "500+" }
   ];
 
   return (
@@ -64,23 +64,23 @@ const Index = () => {
         
         <div className="relative z-10 text-center text-white px-4 max-w-4xl mx-auto animate-fade-in">
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-            Your Stage Awaits in 
+            Votre Scène Vous Attend en 
             <span className="text-secondary block">
-              Tunisia
+              Tunisie
             </span>
           </h1>
           <p className="text-xl md:text-2xl mb-8 text-gray-200 max-w-2xl mx-auto">
-            Connect with casting directors and find your next big role in Tunisia's thriving entertainment industry.
+            Connectez-vous avec les directeurs de casting et trouvez votre prochain grand rôle dans l'industrie du divertissement tunisien.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button variant="hero" size="lg" asChild className="text-lg px-8 py-6">
-              <Link to="/signup">Start Your Journey</Link>
+              <Link to="/signup">Commencez Votre Parcours</Link>
             </Button>
             <Button variant="outline" size="lg" asChild className="text-lg px-8 py-6 border-white text-white bg-white/10 hover:bg-white hover:text-primary">
-              <Link to="/castings">Browse Castings</Link>
+              <Link to="/castings">Parcourir les Castings</Link>
             </Button>
             <Button variant="outline" size="lg" asChild className="text-lg px-8 py-6 border-white text-white bg-white/10 hover:bg-white hover:text-primary">
-              <Link to="/signup" state={{ accountType: 'producer' }}>Post a Casting</Link>
+              <Link to="/signup" state={{ accountType: 'producer' }}>Publier un Casting</Link>
             </Button>
           </div>
 
@@ -116,10 +116,10 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16 animate-slide-up">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
-              Why Choose Tunisia Casting?
+            Pourquoi Choisir Tunisia Casting ?
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              The premier platform connecting talent with opportunities across Tunisia's entertainment landscape.
+              La plateforme de référence connectant les talents aux opportunités dans le paysage du divertissement tunisien.
             </p>
           </div>
           
@@ -160,13 +160,13 @@ const Index = () => {
       <section className="py-20 bg-gradient-card">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
-            Ready to Begin Your Journey?
+            Prêt à Commencer Votre Parcours ?
           </h2>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Join Tunisia's premier casting platform and connect with opportunities that match your talent.
+            Rejoignez la plateforme de casting de référence en Tunisie et connectez-vous aux opportunités qui correspondent à votre talent.
           </p>
           <Button variant="hero" size="lg" asChild className="text-lg px-8 py-6">
-            <Link to="/signup">Join Tunisia Casting</Link>
+            <Link to="/signup">Rejoindre Tunisia Casting</Link>
           </Button>
         </div>
       </section>

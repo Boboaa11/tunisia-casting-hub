@@ -46,11 +46,11 @@ const mockEnrich = (app: any, index: number): EnrichedApplication => {
   const genders = ["Homme", "Femme", "Homme", "Femme"];
   const locations = ["Tunis", "Sousse", "Sfax", "Sidi Bou Said", "Monastir", "Bizerte"];
   const skills = [
-    ["Acting", "Stage combat", "Horseback riding"],
-    ["Comedy", "Improvisation", "Dance"],
-    ["Drama", "Classical acting", "Singing"],
-    ["Modeling", "Posing", "Movement"],
-    ["Physical theater", "Acrobatics", "Mime"],
+    ["Jeu d'acteur", "Combat scénique", "Équitation"],
+    ["Comédie", "Improvisation", "Danse"],
+    ["Drame", "Jeu classique", "Chant"],
+    ["Mannequinat", "Pose", "Mouvement"],
+    ["Théâtre physique", "Acrobatie", "Mime"],
   ];
   const expLevels = ["Débutant", "Intermédiaire", "Professionnel", "Expert"];
   const langs = [
