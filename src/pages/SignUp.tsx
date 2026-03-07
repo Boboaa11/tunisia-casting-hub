@@ -33,12 +33,8 @@ const SignUp = () => {
     firstName: "",
     lastName: "",
     email: "",
-    phone: "",
     password: "",
     confirmPassword: "",
-    talentType: "",
-     age: "",
-     city: "",
     agreeToTerms: false,
     agreeToMarketing: false
   });
@@ -65,8 +61,6 @@ const SignUp = () => {
       case "firstName": return validateRequired(value, "Le prénom");
       case "lastName": return validateRequired(value, "Le nom");
       case "email": return validateEmail(value);
-      case "phone": return validatePhone(value);
-      case "age": return validateAge(value);
       case "password": return validatePassword(value);
       case "confirmPassword": return validateConfirmPassword(talentFormData.password, value);
       default: return "";
@@ -360,70 +354,7 @@ const SignUp = () => {
                       <FormFieldError error={talentValidation.getError("email")} />
                     </div>
  
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="phone" className="text-foreground">Téléphone</Label>
-                        <Input
-                          id="phone"
-                          name="phone"
-                          type="tel"
-                          value={talentFormData.phone}
-                          onChange={handleTalentChange}
-                          onBlur={handleTalentBlur}
-                          placeholder="+216 XX XXX XXX"
-                          className={`shadow-card ${talentValidation.getError("phone") ? "border-destructive" : ""}`}
-                        />
-                        <FormFieldError error={talentValidation.getError("phone")} />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="age" className="text-foreground">Âge</Label>
-                        <Input
-                          id="age"
-                          name="age"
-                          type="number"
-                          value={talentFormData.age}
-                          onChange={handleTalentChange}
-                          onBlur={handleTalentBlur}
-                          placeholder="25"
-                          className={`shadow-card ${talentValidation.getError("age") ? "border-destructive" : ""}`}
-                        />
-                        <FormFieldError error={talentValidation.getError("age")} />
-                      </div>
-                    </div>
- 
-                   <div className="grid grid-cols-2 gap-4">
                      <div className="space-y-2">
-                       <Label htmlFor="city" className="text-foreground">Ville</Label>
-                       <Input
-                         id="city"
-                         name="city"
-                         type="text"
-                         value={talentFormData.city}
-                         onChange={handleTalentChange}
-                         placeholder="Tunis"
-                         className="shadow-card"
-                       />
-                     </div>
-                     <div className="space-y-2">
-                       <Label htmlFor="talentType" className="text-foreground">Type de talent</Label>
-                       <Select onValueChange={(value) => setTalentFormData({...talentFormData, talentType: value})}>
-                         <SelectTrigger className="shadow-card">
-                           <SelectValue placeholder="Sélectionnez" />
-                         </SelectTrigger>
-                         <SelectContent>
-                           <SelectItem value="actor">Acteur</SelectItem>
-                           <SelectItem value="actress">Actrice</SelectItem>
-                           <SelectItem value="model">Mannequin</SelectItem>
-                           <SelectItem value="voice-actor">Doubleur</SelectItem>
-                           <SelectItem value="dancer">Danseur</SelectItem>
-                           <SelectItem value="musician">Musicien</SelectItem>
-                           <SelectItem value="other">Autre</SelectItem>
-                         </SelectContent>
-                       </Select>
-                     </div>
-                   </div>
- 
-                    <div className="space-y-2">
                       <Label htmlFor="password" className="text-foreground">Mot de passe *</Label>
                       <div className="relative">
                         <Input
