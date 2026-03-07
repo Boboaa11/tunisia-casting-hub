@@ -134,7 +134,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const signup = (email: string, password: string, name: string, role: UserRole) => {
-    // Mock signup - in real app this would call an API
     setUser({
       id: '1',
       email,
@@ -142,11 +141,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       role,
       hasSubscription: false
     });
+    if (role === 'talent') {
+      setOnboardingComplete(false);
+    }
   };
 
   const logout = () => {
     setUser(null);
+    setOnboardingComplete(true);
     setRedirectAfterAuth(null);
+  };
+
+  const completeOnboarding = () => {
+    setOnboardingComplete(true);
   };
 
   const setSubscription = (hasSubscription: boolean) => {
@@ -159,11 +166,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     <AuthContext.Provider value={{
       user,
       isAuthenticated: !!user,
+      onboardingComplete,
       login,
       loginAsDemo,
       signup,
       logout,
       setSubscription,
+      completeOnboarding,
       redirectAfterAuth,
       setRedirectAfterAuth
     }}>
