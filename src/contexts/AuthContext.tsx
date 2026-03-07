@@ -82,11 +82,13 @@ export const DEMO_USERS: DemoUser[] = [
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
+  onboardingComplete: boolean;
   login: (email: string, password: string, role: UserRole) => void;
   loginAsDemo: (demoUserId: string) => void;
   signup: (email: string, password: string, name: string, role: UserRole) => void;
   logout: () => void;
   setSubscription: (hasSubscription: boolean) => void;
+  completeOnboarding: () => void;
   redirectAfterAuth: string | null;
   setRedirectAfterAuth: (path: string | null) => void;
 }
@@ -103,6 +105,7 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [onboardingComplete, setOnboardingComplete] = useState<boolean>(true);
   const [redirectAfterAuth, setRedirectAfterAuth] = useState<string | null>(null);
 
   const login = (email: string, password: string, role: UserRole) => {
