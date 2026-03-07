@@ -119,8 +119,10 @@ const SignUp = () => {
       const redirect = redirectAfterAuth;
       setRedirectAfterAuth(null);
       navigate(redirect);
+    } else if (accountType === 'talent') {
+      navigate('/onboarding');
     } else {
-      navigate(accountType === 'talent' ? '/castings' : '/producer-dashboard');
+      navigate('/producer-dashboard');
     }
   };
 
