@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Eye, EyeOff, Star, Users, Clapperboard, ArrowLeft } from "lucide-react";
+import { Eye, EyeOff, Star, Users, Clapperboard, ArrowLeft, Sparkles } from "lucide-react";
 import Layout from "@/components/Layout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -27,6 +27,8 @@ const SignUp = () => {
    const [accountType, setAccountType] = useState<AccountType>(locationState?.accountType || null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showWelcomeOverlay, setShowWelcomeOverlay] = useState(false);
+  const [welcomeName, setWelcomeName] = useState("");
    
    // Talent form data
    const [talentFormData, setTalentFormData] = useState({
@@ -110,18 +112,26 @@ const SignUp = () => {
      
     signup(formData.email, formData.password, name, accountType);
      
-    toast({
-      title: "Compte créé avec succès !",
-      description: `Bienvenue sur Tunisia Casting en tant que ${accountType === 'talent' ? 'Talent' : 'Producteur'}`,
-    });
-     
     if (redirectAfterAuth) {
+      toast({
+        title: "Compte créé avec succès !",
+        description: `Bienvenue sur Tunisia Casting en tant que ${accountType === 'talent' ? 'Talent' : 'Producteur'}`,
+      });
       const redirect = redirectAfterAuth;
       setRedirectAfterAuth(null);
       navigate(redirect);
     } else if (accountType === 'talent') {
-      navigate('/onboarding');
+      // Show welcome overlay then navigate to onboarding
+      setWelcomeName(talentFormData.firstName);
+      setShowWelcomeOverlay(true);
+      setTimeout(() => {
+        navigate('/onboarding');
+      }, 1400);
     } else {
+      toast({
+        title: "Compte créé avec succès !",
+        description: `Bienvenue sur Tunisia Casting en tant que Producteur`,
+      });
       navigate('/producer-dashboard');
     }
   };
@@ -277,9 +287,28 @@ const SignUp = () => {
  
    // Talent Registration Form
    if (accountType === 'talent') {
-     return (
-       <Layout>
-         <div className="min-h-screen bg-gradient-card flex items-center justify-center py-12 px-4">
+      return (
+        <>
+          {/* Welcome overlay */}
+          {showWelcomeOverlay && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
+              <div className="text-center space-y-4 animate-fade-in">
+                <div className="flex justify-center">
+                  <div className="p-4 bg-gradient-hero rounded-full shadow-glow">
+                    <Sparkles className="h-10 w-10 text-primary-foreground" />
+                  </div>
+                </div>
+                <h1 className="text-3xl font-bold text-foreground">
+                  Bienvenue sur Tunisia Casting 🎬
+                </h1>
+                <p className="text-lg text-muted-foreground">
+                  Ravi de vous avoir, {welcomeName} !
+                </p>
+              </div>
+            </div>
+          )}
+          <Layout>
+          <div className="min-h-screen bg-gradient-card flex items-center justify-center py-12 px-4">
            <div className="max-w-lg w-full space-y-8 animate-fade-in">
              <div className="text-center">
                <Button 
@@ -471,8 +500,9 @@ const SignUp = () => {
              </Card>
            </div>
          </div>
-       </Layout>
-     );
+        </Layout>
+        </>
+      );
    }
  
    // Producer Registration Form
