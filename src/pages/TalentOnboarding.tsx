@@ -33,6 +33,13 @@ const TalentOnboarding = () => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [fadeState, setFadeState] = useState<"in" | "out">("in");
+  const [pageReady, setPageReady] = useState(false);
+
+  // Fade in the page on mount (after welcome overlay)
+  useState(() => {
+    const timer = setTimeout(() => setPageReady(true), 100);
+    return () => clearTimeout(timer);
+  });
 
   // Step 1 form
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
