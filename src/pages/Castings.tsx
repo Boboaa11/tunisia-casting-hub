@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import Layout from "@/components/Layout";
 import { useCasting, Casting, CastingRole } from "@/contexts/CastingContext";
 import { useAuth } from "@/contexts/AuthContext";
 import CastingApplicationDialog from "@/components/CastingApplicationDialog";
+import CastingDetailPanel from "@/components/CastingDetailPanel";
 
 const Castings = () => {
   const navigate = useNavigate();
