@@ -108,7 +108,7 @@ const Castings = () => {
   return (
     <Layout>
       <div className="min-h-screen bg-gradient-card py-8">
-        <div className="container mx-auto px-4">
+        <div className="max-w-[900px] mx-auto px-4">
           {/* Header */}
           <div className="text-center mb-12 animate-fade-in">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
