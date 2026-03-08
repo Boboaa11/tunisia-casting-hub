@@ -13,6 +13,7 @@ import CastingDetailPanel from "@/components/CastingDetailPanel";
 
 const Castings = () => {
   const navigate = useNavigate();
+  const { id: castingIdParam } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
