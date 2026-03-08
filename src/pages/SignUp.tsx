@@ -287,9 +287,28 @@ const SignUp = () => {
  
    // Talent Registration Form
    if (accountType === 'talent') {
-     return (
-       <Layout>
-         <div className="min-h-screen bg-gradient-card flex items-center justify-center py-12 px-4">
+      return (
+        <>
+          {/* Welcome overlay */}
+          {showWelcomeOverlay && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
+              <div className="text-center space-y-4 animate-fade-in">
+                <div className="flex justify-center">
+                  <div className="p-4 bg-gradient-hero rounded-full shadow-glow">
+                    <Sparkles className="h-10 w-10 text-primary-foreground" />
+                  </div>
+                </div>
+                <h1 className="text-3xl font-bold text-foreground">
+                  Bienvenue sur Tunisia Casting 🎬
+                </h1>
+                <p className="text-lg text-muted-foreground">
+                  Ravi de vous avoir, {welcomeName} !
+                </p>
+              </div>
+            </div>
+          )}
+          <Layout>
+          <div className="min-h-screen bg-gradient-card flex items-center justify-center py-12 px-4">
            <div className="max-w-lg w-full space-y-8 animate-fade-in">
              <div className="text-center">
                <Button 
