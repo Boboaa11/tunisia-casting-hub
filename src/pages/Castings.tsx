@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,9 +9,11 @@ import Layout from "@/components/Layout";
 import { useCasting, Casting, CastingRole } from "@/contexts/CastingContext";
 import { useAuth } from "@/contexts/AuthContext";
 import CastingApplicationDialog from "@/components/CastingApplicationDialog";
+import CastingDetailPanel from "@/components/CastingDetailPanel";
 
 const Castings = () => {
   const navigate = useNavigate();
+  const { id: castingIdParam } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -164,7 +166,7 @@ const Castings = () => {
                   {/* Card Header — Project Name */}
                   <div
                     className="px-6 pt-5 pb-3 border-b border-border/40 cursor-pointer group"
-                    onClick={() => navigate(`/casting/${casting.id}`)}
+                    onClick={() => navigate(`/castings/${casting.id}`)}
                   >
                     <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                       {casting.isPaid && (
@@ -220,7 +222,7 @@ const Castings = () => {
                         variant="outline"
                         size="sm"
                         className="gap-1.5 text-xs"
-                        onClick={() => navigate(`/casting/${casting.id}`)}
+                        onClick={() => navigate(`/castings/${casting.id}`)}
                       >
                         Voir Tous les Rôles
                         <ChevronRight className="h-3.5 w-3.5" />
@@ -281,7 +283,7 @@ const Castings = () => {
                       {extraRoles > 0 && (
                         <button
                           className="text-xs text-primary hover:text-primary-glow font-medium text-center py-1 transition-colors"
-                          onClick={() => navigate(`/casting/${casting.id}`)}
+                          onClick={() => navigate(`/castings/${casting.id}`)}
                         >
                           + {extraRoles} autre{extraRoles > 1 ? 's' : ''} rôle{extraRoles > 1 ? 's' : ''}
                         </button>
@@ -313,6 +315,11 @@ const Castings = () => {
         role={selectedRole}
         open={applicationDialogOpen}
         onOpenChange={setApplicationDialogOpen}
+      />
+
+      <CastingDetailPanel
+        castingId={castingIdParam ? parseInt(castingIdParam) : null}
+        onClose={() => navigate('/castings')}
       />
     </Layout>
   );
