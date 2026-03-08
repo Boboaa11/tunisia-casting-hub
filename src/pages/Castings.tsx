@@ -108,7 +108,7 @@ const Castings = () => {
   return (
     <Layout>
       <div className="min-h-screen bg-gradient-card py-8">
-        <div className="container mx-auto px-4">
+        <div className="max-w-[900px] mx-auto px-4">
           {/* Header */}
           <div className="text-center mb-12 animate-fade-in">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
@@ -165,8 +165,7 @@ const Castings = () => {
                 >
                   {/* Card Header — Project Name */}
                   <div
-                    className="px-6 pt-5 pb-3 border-b border-border/40 cursor-pointer group"
-                    onClick={() => navigate(`/castings/${casting.id}`)}
+                    className="px-8 pt-5 pb-3 border-b border-border/40 cursor-pointer group"
                   >
                     <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                       {casting.isPaid && (
@@ -186,7 +185,7 @@ const Castings = () => {
 
                   <div className="flex flex-col lg:flex-row">
                     {/* Left: Production Details */}
-                    <div className="flex-1 p-6 lg:border-r border-border/40">
+                    <div className="flex-1 px-8 py-6 lg:border-r border-border/40">
                       <p className="text-sm font-semibold text-foreground mb-1">
                         {casting.production}
                       </p>
@@ -230,7 +229,7 @@ const Castings = () => {
                     </div>
 
                     {/* Right: Role Descriptions */}
-                    <div className="lg:w-[340px] xl:w-[380px] bg-muted/30 p-4 flex flex-col gap-2.5">
+                    <div className="lg:w-[340px] xl:w-[380px] bg-muted/30 p-5 flex flex-col gap-2.5">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                           Rôles Disponibles
