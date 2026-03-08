@@ -500,8 +500,9 @@ const SignUp = () => {
              </Card>
            </div>
          </div>
-       </Layout>
-     );
+        </Layout>
+        </>
+      );
    }
  
    // Producer Registration Form
