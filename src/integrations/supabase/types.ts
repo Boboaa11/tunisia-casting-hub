@@ -14,7 +14,218 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      applications: {
+        Row: {
+          applicant_email: string
+          applicant_name: string
+          availability: string | null
+          casting_id: number
+          cover_message: string
+          experience: string | null
+          id: string
+          photo_files: string[] | null
+          portfolio_file: string | null
+          role_id: string
+          status: string | null
+          submitted_at: string
+          user_id: string
+          video_showreel: string | null
+        }
+        Insert: {
+          applicant_email: string
+          applicant_name: string
+          availability?: string | null
+          casting_id: number
+          cover_message: string
+          experience?: string | null
+          id?: string
+          photo_files?: string[] | null
+          portfolio_file?: string | null
+          role_id: string
+          status?: string | null
+          submitted_at?: string
+          user_id: string
+          video_showreel?: string | null
+        }
+        Update: {
+          applicant_email?: string
+          applicant_name?: string
+          availability?: string | null
+          casting_id?: number
+          cover_message?: string
+          experience?: string | null
+          id?: string
+          photo_files?: string[] | null
+          portfolio_file?: string | null
+          role_id?: string
+          status?: string | null
+          submitted_at?: string
+          user_id?: string
+          video_showreel?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_casting_id_fkey"
+            columns: ["casting_id"]
+            isOneToOne: false
+            referencedRelation: "castings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "applications_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "casting_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      casting_roles: {
+        Row: {
+          age_range: string | null
+          appearance: string | null
+          casting_id: number
+          created_at: string
+          description: string | null
+          ethnicity: string | null
+          experience_level: string | null
+          gender: string | null
+          id: string
+          languages: string[] | null
+          name: string
+          role_compensation: string | null
+          role_location: string | null
+          shooting_dates: string | null
+          skills: string[] | null
+          special_talents: string[] | null
+          talents_needed: number | null
+        }
+        Insert: {
+          age_range?: string | null
+          appearance?: string | null
+          casting_id: number
+          created_at?: string
+          description?: string | null
+          ethnicity?: string | null
+          experience_level?: string | null
+          gender?: string | null
+          id?: string
+          languages?: string[] | null
+          name: string
+          role_compensation?: string | null
+          role_location?: string | null
+          shooting_dates?: string | null
+          skills?: string[] | null
+          special_talents?: string[] | null
+          talents_needed?: number | null
+        }
+        Update: {
+          age_range?: string | null
+          appearance?: string | null
+          casting_id?: number
+          created_at?: string
+          description?: string | null
+          ethnicity?: string | null
+          experience_level?: string | null
+          gender?: string | null
+          id?: string
+          languages?: string[] | null
+          name?: string
+          role_compensation?: string | null
+          role_location?: string | null
+          shooting_dates?: string | null
+          skills?: string[] | null
+          special_talents?: string[] | null
+          talents_needed?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "casting_roles_casting_id_fkey"
+            columns: ["casting_id"]
+            isOneToOne: false
+            referencedRelation: "castings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      castings: {
+        Row: {
+          additional_requirements: string[] | null
+          applications_count: number | null
+          category: string
+          compensation: string
+          compensation_details: string | null
+          contact_email: string | null
+          created_at: string
+          created_by: string | null
+          deadline: string
+          description: string
+          id: number
+          is_paid: boolean | null
+          location: string
+          production: string
+          production_dates: string | null
+          requirements: string[] | null
+          shooting_locations: string[] | null
+          status: string | null
+          synopsis: string | null
+          title: string
+          type: string
+          updated_at: string
+          views: number | null
+        }
+        Insert: {
+          additional_requirements?: string[] | null
+          applications_count?: number | null
+          category: string
+          compensation: string
+          compensation_details?: string | null
+          contact_email?: string | null
+          created_at?: string
+          created_by?: string | null
+          deadline: string
+          description: string
+          id?: number
+          is_paid?: boolean | null
+          location: string
+          production: string
+          production_dates?: string | null
+          requirements?: string[] | null
+          shooting_locations?: string[] | null
+          status?: string | null
+          synopsis?: string | null
+          title: string
+          type: string
+          updated_at?: string
+          views?: number | null
+        }
+        Update: {
+          additional_requirements?: string[] | null
+          applications_count?: number | null
+          category?: string
+          compensation?: string
+          compensation_details?: string | null
+          contact_email?: string | null
+          created_at?: string
+          created_by?: string | null
+          deadline?: string
+          description?: string
+          id?: number
+          is_paid?: boolean | null
+          location?: string
+          production?: string
+          production_dates?: string | null
+          requirements?: string[] | null
+          shooting_locations?: string[] | null
+          status?: string | null
+          synopsis?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+          views?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

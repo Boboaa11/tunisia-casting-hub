@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface CastingRole {
   id: string;
@@ -22,6 +23,7 @@ export interface CastingApplication {
   id: string;
   castingId: number;
   roleId: string;
+  userId?: string;
   applicantName: string;
   applicantEmail: string;
   coverMessage: string;
@@ -30,6 +32,7 @@ export interface CastingApplication {
   photoFiles?: string[];
   videoShowreel?: string;
   portfolioFile?: string;
+  status?: string;
   submittedAt: string;
 }
 
@@ -48,12 +51,6 @@ export interface Casting {
   applications?: number;
   views?: number;
   createdAt?: string;
-  ageMin?: string;
-  ageMax?: string;
-  gender?: string;
-  experience?: string;
-  languages?: string[];
-  specialSkills?: string[];
   synopsis?: string;
   roles?: CastingRole[];
   shootingLocations?: string[];
@@ -62,17 +59,20 @@ export interface Casting {
   additionalRequirements?: string[];
   contactEmail?: string;
   isPaid?: boolean;
+  createdBy?: string;
 }
 
 interface CastingContextType {
   castings: Casting[];
   applications: CastingApplication[];
-  addCasting: (casting: Omit<Casting, 'id'>) => void;
-  updateCasting: (id: number, casting: Partial<Casting>) => void;
-  deleteCasting: (id: number) => void;
-  addApplication: (application: Omit<CastingApplication, 'id' | 'submittedAt'>) => void;
+  loading: boolean;
+  addCasting: (casting: Omit<Casting, 'id'>) => Promise<void>;
+  updateCasting: (id: number, casting: Partial<Casting>) => Promise<void>;
+  deleteCasting: (id: number) => Promise<void>;
+  addApplication: (application: Omit<CastingApplication, 'id' | 'submittedAt'>) => Promise<void>;
   getApplicationsForCasting: (castingId: number) => CastingApplication[];
   getApplicationsForRole: (castingId: number, roleId: string) => CastingApplication[];
+  refreshCastings: () => Promise<void>;
 }
 
 const CastingContext = createContext<CastingContextType | undefined>(undefined);
@@ -85,337 +85,233 @@ export const useCasting = () => {
   return context;
 };
 
-const initialCastings: Casting[] = [
-  {
-    id: 1,
-    title: "Rôle Principal - Série Dramatique Historique",
-    production: "Carthage Productions",
-    type: "Série TV",
-    category: "tv",
-    location: "Tunis",
-    deadline: "2024-08-15",
-    description: "Recherche acteur, 25-35 ans, pour le rôle principal dans une série dramatique historique sur Carthage antique.",
-    synopsis: "Une série épique de 10 épisodes explorant l'ascension d'Hannibal Barca, de sa jeunesse à Carthage à sa légendaire traversée des Alpes. La série mêle intrigues politiques, stratégie militaire et drame personnel pour dresser le portrait de l'un des plus grands commandants militaires de l'histoire.",
-    requirements: ["Expérience professionnelle en jeu d'acteur", "Bilingue arabe et français", "Disponible pendant 6 mois"],
-    compensation: "Tarif professionnel",
-    isPaid: true,
-    compensationDetails: "2 500 TND par épisode + transport et hébergement pris en charge. Droits résiduels pour la distribution internationale.",
-    status: "Actif",
-    applications: 45,
-    views: 320,
-    createdAt: "2024-01-10",
-    productionDates: "Mars 2025 - Août 2025",
-    shootingLocations: ["Site archéologique de Carthage", "Sidi Bou Said", "Ruines de Dougga"],
-    additionalRequirements: ["Bande démo ou showreel", "Photos professionnelles", "Auto-audition vidéo (monologue de 2 min)"],
-    roles: [
-      {
-        id: "role-1-1",
-        name: "Hannibal Barca (Principal)",
-        description: "Un brillant jeune stratège militaire tiraillé entre le devoir envers Carthage et l'ambition personnelle. Doit transmettre charisme, intelligence et force physique.",
-        ageRange: "25-35 ans",
-        gender: "Homme",
-        ethnicity: "Méditerranéen",
-        appearance: "Physique athlétique, traits méditerranéens, cheveux noirs",
-        skills: ["Équitation", "Combat scénique", "Jeu dramatique"],
-        languages: ["Arabe", "Français", "Anglais (un plus)"],
-        specialTalents: ["Escrime", "Présence de leader"],
-        experienceLevel: "Professionnel (5+ ans)",
-        talentsNeeded: 1,
-        shootingDates: "Mars - Août 2025",
-        roleLocation: "Carthage, Sidi Bou Said",
-        roleCompensation: "2 500 TND/épisode"
-      },
-      {
-        id: "role-1-2",
-        name: "Sophonisba (Secondaire)",
-        description: "Une noble carthaginoise et stratège politique. Intelligente, posée et farouchement loyale envers sa cité.",
-        ageRange: "22-30 ans",
-        gender: "Femme",
-        appearance: "Élégante, port royal",
-        skills: ["Jeu classique", "Profondeur émotionnelle"],
-        languages: ["Arabe", "Français"],
-        specialTalents: ["Mouvement d'époque", "Danse"],
-        experienceLevel: "Intermédiaire (2-5 ans)",
-        talentsNeeded: 1,
-        shootingDates: "Avril - Juillet 2025",
-        roleLocation: "Carthage",
-        roleCompensation: "1 800 TND/épisode"
-      },
-      {
-        id: "role-1-3",
-        name: "Hasdrubal (Secondaire)",
-        description: "Le frère cadet d'Hannibal et loyal lieutenant. Courageux mais impulsif, il apporte une touche d'humour au cœur du drame.",
-        ageRange: "20-28 ans",
-        gender: "Homme",
-        appearance: "Jeune, énergique",
-        skills: ["Combat scénique", "Comédie physique"],
-        languages: ["Arabe", "Français"],
-        experienceLevel: "Débutant à Intermédiaire",
-        talentsNeeded: 1,
-        shootingDates: "Mars - Août 2025",
-        roleLocation: "Carthage, Dougga",
-        roleCompensation: "1 500 TND/épisode"
-      }
-    ]
-  },
-  {
-    id: 2,
-    title: "Actrice Secondaire - Comédie Romantique",
-    production: "Sidi Bou Said Films",
-    type: "Long Métrage",
-    category: "film",
-    location: "Sidi Bou Said",
-    deadline: "2024-08-20",
-    description: "Recherche actrice talentueuse, 20-30 ans, pour un rôle secondaire dans une comédie romantique.",
-    synopsis: "Une charmante comédie romantique dans les ruelles pittoresques de Sidi Bou Said. Quand une jeune femme tuniso-américaine revient au village de sa grand-mère pour l'été, elle découvre que l'amour et les traditions familiales ne sont pas aussi démodés qu'elle le pensait.",
-    requirements: ["Expérience en jeu d'acteur souhaitée", "À l'aise avec la comédie", "Disponible pendant 2 mois"],
-    compensation: "Rémunération compétitive",
-    isPaid: true,
-    compensationDetails: "1 800 TND au total pour 3 semaines de tournage. Repas et transport local fournis.",
-    status: "Actif",
-    applications: 32,
-    views: 180,
-    createdAt: "2024-01-12",
-    productionDates: "Juin 2025 - Juillet 2025",
-    shootingLocations: ["Village de Sidi Bou Said", "Plage de La Marsa", "Médina de Tunis"],
-    additionalRequirements: ["Showreel comédie", "Photos récentes"],
-    roles: [
-      {
-        id: "role-2-1",
-        name: "Yasmine (Rôle secondaire principal)",
-        description: "La meilleure amie décalée et attachante qui donne de terribles conseils amoureux mais a un cœur en or. Excellent sens du timing comique requis.",
-        ageRange: "20-30 ans",
-        gender: "Femme",
-        appearance: "Chaleureuse, accessible, visage expressif",
-        skills: ["Comédie", "Improvisation", "Comédie physique"],
-        languages: ["Arabe tunisien", "Français"],
-        specialTalents: ["Chant (un plus)", "Danse"],
-        experienceLevel: "Intermédiaire",
-        talentsNeeded: 1,
-        shootingDates: "Juin - Juillet 2025",
-        roleLocation: "Sidi Bou Said, La Marsa",
-        roleCompensation: "1 800 TND total"
-      },
-      {
-        id: "role-2-2",
-        name: "Grand-mère Fatma",
-        description: "La grand-mère sage et spirituelle qui orchestre secrètement l'histoire d'amour. Matriarche comique à la langue acérée et au cœur tendre.",
-        ageRange: "60-75 ans",
-        gender: "Femme",
-        appearance: "Chaleureuse, maternelle, présence distinctive",
-        skills: ["Drame", "Comédie"],
-        languages: ["Arabe tunisien"],
-        experienceLevel: "Tous niveaux",
-        talentsNeeded: 1,
-        shootingDates: "Juin 2025",
-        roleLocation: "Sidi Bou Said",
-        roleCompensation: "1 200 TND total"
-      }
-    ]
-  },
-  {
-    id: 3,
-    title: "Troupe - Théâtre Contemporain",
-    production: "Théâtre National de Tunisie",
-    type: "Théâtre",
-    category: "theater",
-    location: "Tunis",
-    deadline: "2024-08-25",
-    description: "Plusieurs rôles disponibles pour une production théâtrale contemporaine explorant la société tunisienne moderne.",
-    synopsis: "Une pièce de théâtre audacieuse et expérimentale qui entrelace cinq histoires connectées de jeunes Tunisiens naviguant entre identité, tradition et modernité. Jouée sur une scène minimaliste avec musique live et projections visuelles.",
-    requirements: ["Expérience théâtrale requise", "Forte présence scénique", "Disponible pour les répétitions"],
-    compensation: "Tarif théâtre",
-    isPaid: true,
-    compensationDetails: "800 TND/mois pendant les répétitions, 120 TND par représentation. 20 représentations prévues.",
-    status: "Actif",
-    applications: 28,
-    views: 95,
-    createdAt: "2024-01-15",
-    productionDates: "Avril 2025 - Juin 2025",
-    shootingLocations: ["Théâtre Municipal de Tunis", "Cité de la Culture"],
-    additionalRequirements: ["Audition en direct requise", "Préparer un monologue contemporain de 3 minutes"],
-    roles: [
-      {
-        id: "role-3-1",
-        name: "Amine",
-        description: "Un jeune développeur informatique qui se demande s'il doit rester en Tunisie ou émigrer. Son conflit intérieur est le moteur de son parcours.",
-        ageRange: "22-28 ans",
-        gender: "Homme",
-        skills: ["Jeu scénique", "Interprétation de monologues"],
-        languages: ["Arabe", "Français"],
-        experienceLevel: "Intermédiaire",
-        talentsNeeded: 1,
-        shootingDates: "Avril - Juin 2025",
-        roleLocation: "Théâtre Municipal de Tunis",
-        roleCompensation: "800 TND/mois + 120 TND/représentation"
-      },
-      {
-        id: "role-3-2",
-        name: "Nour",
-        description: "Une musicienne en herbe tiraillée entre les attentes conservatrices de sa famille et ses rêves artistiques.",
-        ageRange: "18-25 ans",
-        gender: "Femme",
-        skills: ["Théâtre musical", "Performance vocale"],
-        languages: ["Arabe"],
-        specialTalents: ["Chant", "Guitare ou oud"],
-        experienceLevel: "Débutant à Intermédiaire",
-        talentsNeeded: 1,
-        shootingDates: "Avril - Juin 2025",
-        roleLocation: "Théâtre Municipal de Tunis",
-        roleCompensation: "800 TND/mois + 120 TND/représentation"
-      },
-      {
-        id: "role-3-3",
-        name: "Karim",
-        description: "Un artiste de rue utilisant le graffiti comme expression politique. Énergie physique et rebelle.",
-        ageRange: "20-30 ans",
-        gender: "Homme",
-        appearance: "Mince, énergique",
-        skills: ["Théâtre physique", "Mouvement"],
-        languages: ["Arabe", "Français"],
-        experienceLevel: "Intermédiaire",
-        talentsNeeded: 1,
-        shootingDates: "Avril - Juin 2025",
-        roleLocation: "Cité de la Culture",
-        roleCompensation: "800 TND/mois + 120 TND/représentation"
-      }
-    ]
-  },
-  {
-    id: 4,
-    title: "Mannequins - Campagne Mode",
-    production: "Medina Fashion House",
-    type: "Publicité",
-    category: "commercial",
-    location: "Sousse",
-    deadline: "2024-08-10",
-    description: "Recherche mannequins diversifiés pour une campagne mode mêlant styles traditionnels et contemporains.",
-    synopsis: "Une campagne mode haut de gamme célébrant la fusion de l'artisanat traditionnel tunisien avec le design contemporain. Le shooting mettra en valeur des textiles tissés à la main réinventés dans des silhouettes modernes, photographiés dans des paysages iconiques de Tunisie.",
-    requirements: ["Expérience en mannequinat", "Taille 170 cm+", "Portfolio professionnel"],
-    compensation: "Tarif journalier + droits d'utilisation",
-    isPaid: true,
-    compensationDetails: "500 TND par jour, tournage de 2 jours. Droits d'utilisation pour l'impression et le numérique pendant 12 mois.",
-    status: "Actif",
-    applications: 67,
-    views: 245,
-    createdAt: "2024-01-08",
-    productionDates: "Mai 2025 (2 jours)",
-    shootingLocations: ["Médina de Sousse", "Amphithéâtre d'El Jem"],
-    additionalRequirements: ["Portfolio professionnel (minimum 10 photos)", "Carte composite", "Photos en pied et gros plan"],
-    roles: [
-      {
-        id: "role-4-1",
-        name: "Mannequin Principal - Ligne Traditionnelle",
-        description: "Représenter la collection patrimoniale. Doit incarner l'élégance et la fierté culturelle en portant des créations tunisiennes traditionnelles.",
-        ageRange: "20-30 ans",
-        gender: "Femme",
-        appearance: "Taille 175 cm+, traits marquants, posture assurée",
-        skills: ["Expérience défilé", "Pose"],
-        languages: ["Arabe"],
-        experienceLevel: "Professionnel",
-        talentsNeeded: 2,
-        shootingDates: "Mai 2025",
-        roleLocation: "Médina de Sousse",
-        roleCompensation: "500 TND/jour"
-      },
-      {
-        id: "role-4-2",
-        name: "Mannequin Principal - Ligne Moderne",
-        description: "Représenter la collection contemporaine. Esthétique urbaine et audacieuse faisant le pont entre tradition et modernité.",
-        ageRange: "18-28 ans",
-        gender: "Non spécifié",
-        appearance: "Taille 170 cm+, look unique, profils diversifiés bienvenus",
-        skills: ["Mannequinat éditorial", "Mouvement"],
-        languages: ["Arabe", "Français"],
-        experienceLevel: "Tous niveaux",
-        talentsNeeded: 3,
-        shootingDates: "Mai 2025",
-        roleLocation: "Amphithéâtre d'El Jem",
-        roleCompensation: "500 TND/jour"
-      }
-    ]
-  }
-];
+// Map DB row to frontend Casting
+function mapCasting(row: any, roles: CastingRole[]): Casting {
+  return {
+    id: row.id,
+    title: row.title,
+    production: row.production,
+    type: row.type,
+    category: row.category,
+    location: row.location,
+    deadline: row.deadline,
+    description: row.description,
+    requirements: row.requirements || [],
+    compensation: row.compensation,
+    status: row.status,
+    applications: row.applications_count,
+    views: row.views,
+    createdAt: row.created_at,
+    synopsis: row.synopsis,
+    shootingLocations: row.shooting_locations,
+    productionDates: row.production_dates,
+    compensationDetails: row.compensation_details,
+    additionalRequirements: row.additional_requirements,
+    contactEmail: row.contact_email,
+    isPaid: row.is_paid,
+    createdBy: row.created_by,
+    roles,
+  };
+}
 
-const initialApplications: CastingApplication[] = [
-  {
-    id: "app-1",
-    castingId: 1,
-    roleId: "role-1-1",
-    applicantName: "Ahmed Ben Ali",
-    applicantEmail: "ahmed@exemple.tn",
-    coverMessage: "Passionné d'histoire et d'art dramatique, je suis convaincu de pouvoir incarner Hannibal avec authenticité.",
-    experience: "5 ans de théâtre, 2 films tunisiens",
-    availability: "Disponible de mars à août 2025",
-    submittedAt: "2024-02-15T10:30:00Z"
-  },
-  {
-    id: "app-2",
-    castingId: 1,
-    roleId: "role-1-1",
-    applicantName: "Youssef Chaari",
-    applicantEmail: "youssef@exemple.tn",
-    coverMessage: "Acteur formé au conservatoire, j'ai une expérience significative dans les rôles historiques.",
-    experience: "8 ans d'expérience, rôle principal dans 3 séries",
-    availability: "Totalement disponible",
-    submittedAt: "2024-02-16T14:20:00Z"
-  },
-  {
-    id: "app-3",
-    castingId: 1,
-    roleId: "role-1-2",
-    applicantName: "Meriem Jouini",
-    applicantEmail: "meriem@exemple.tn",
-    coverMessage: "Le rôle de Sophonisba me parle profondément. Mon expérience en théâtre classique est un atout.",
-    experience: "3 ans de théâtre classique, 1 film",
-    availability: "Disponible d'avril à juillet",
-    submittedAt: "2024-02-17T09:15:00Z"
-  },
-  {
-    id: "app-4",
-    castingId: 2,
-    roleId: "role-2-1",
-    applicantName: "Sana Trabelsi",
-    applicantEmail: "sana@exemple.tn",
-    coverMessage: "J'adore la comédie et je pense pouvoir apporter beaucoup à Yasmine !",
-    experience: "Spectacles d'humour, 2 courts-métrages comiques",
-    availability: "Disponible juin-juillet 2025",
-    submittedAt: "2024-02-18T11:00:00Z"
-  }
-];
+function mapRole(row: any): CastingRole {
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description || '',
+    ageRange: row.age_range || '',
+    gender: row.gender || '',
+    ethnicity: row.ethnicity,
+    appearance: row.appearance,
+    skills: row.skills,
+    languages: row.languages,
+    specialTalents: row.special_talents,
+    experienceLevel: row.experience_level,
+    talentsNeeded: row.talents_needed,
+    shootingDates: row.shooting_dates,
+    roleLocation: row.role_location,
+    roleCompensation: row.role_compensation,
+  };
+}
+
+function mapApplication(row: any): CastingApplication {
+  return {
+    id: row.id,
+    castingId: row.casting_id,
+    roleId: row.role_id,
+    userId: row.user_id,
+    applicantName: row.applicant_name,
+    applicantEmail: row.applicant_email,
+    coverMessage: row.cover_message,
+    experience: row.experience || '',
+    availability: row.availability || '',
+    photoFiles: row.photo_files,
+    videoShowreel: row.video_showreel,
+    portfolioFile: row.portfolio_file,
+    status: row.status,
+    submittedAt: row.submitted_at,
+  };
+}
 
 export const CastingProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [castings, setCastings] = useState<Casting[]>(initialCastings);
-  const [applications, setApplications] = useState<CastingApplication[]>(initialApplications);
+  const [castings, setCastings] = useState<Casting[]>([]);
+  const [applications, setApplications] = useState<CastingApplication[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const addCasting = (newCasting: Omit<Casting, 'id'>) => {
-    const id = Math.max(...castings.map(c => c.id), 0) + 1;
-    setCastings(prev => [...prev, { ...newCasting, id }]);
+  const fetchCastings = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data: castingRows, error: castingError } = await supabase
+        .from('castings')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (castingError) throw castingError;
+
+      const { data: roleRows, error: roleError } = await supabase
+        .from('casting_roles')
+        .select('*');
+
+      if (roleError) throw roleError;
+
+      const rolesBycastingId: Record<number, CastingRole[]> = {};
+      for (const r of roleRows || []) {
+        const mapped = mapRole(r);
+        if (!rolesBycastingId[r.casting_id]) rolesBycastingId[r.casting_id] = [];
+        rolesBycastingId[r.casting_id].push(mapped);
+      }
+
+      const mapped = (castingRows || []).map(row =>
+        mapCasting(row, rolesBycastingId[row.id] || [])
+      );
+      setCastings(mapped);
+    } catch (err) {
+      console.error('Error fetching castings:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchApplications = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('applications')
+        .select('*')
+        .order('submitted_at', { ascending: false });
+
+      if (error) throw error;
+      setApplications((data || []).map(mapApplication));
+    } catch (err) {
+      console.error('Error fetching applications:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchCastings();
+    fetchApplications();
+  }, [fetchCastings, fetchApplications]);
+
+  const addCasting = async (newCasting: Omit<Casting, 'id'>) => {
+    const { data, error } = await supabase.from('castings').insert({
+      title: newCasting.title,
+      production: newCasting.production,
+      type: newCasting.type,
+      category: newCasting.category,
+      location: newCasting.location,
+      deadline: newCasting.deadline,
+      description: newCasting.description,
+      requirements: newCasting.requirements,
+      compensation: newCasting.compensation,
+      synopsis: newCasting.synopsis,
+      shooting_locations: newCasting.shootingLocations,
+      production_dates: newCasting.productionDates,
+      compensation_details: newCasting.compensationDetails,
+      additional_requirements: newCasting.additionalRequirements,
+      contact_email: newCasting.contactEmail,
+      is_paid: newCasting.isPaid,
+      created_by: newCasting.createdBy,
+    }).select().single();
+
+    if (error) { console.error('Error adding casting:', error); return; }
+
+    // Insert roles if any
+    if (newCasting.roles && newCasting.roles.length > 0 && data) {
+      const roleInserts = newCasting.roles.map(role => ({
+        casting_id: data.id,
+        name: role.name,
+        description: role.description,
+        age_range: role.ageRange,
+        gender: role.gender,
+        ethnicity: role.ethnicity,
+        appearance: role.appearance,
+        skills: role.skills,
+        languages: role.languages,
+        special_talents: role.specialTalents,
+        experience_level: role.experienceLevel,
+        talents_needed: role.talentsNeeded,
+        shooting_dates: role.shootingDates,
+        role_location: role.roleLocation,
+        role_compensation: role.roleCompensation,
+      }));
+      await supabase.from('casting_roles').insert(roleInserts);
+    }
+
+    await fetchCastings();
   };
 
-  const updateCasting = (id: number, updatedData: Partial<Casting>) => {
-    setCastings(prev => prev.map(casting => 
-      casting.id === id ? { ...casting, ...updatedData } : casting
-    ));
+  const updateCasting = async (id: number, updatedData: Partial<Casting>) => {
+    const updatePayload: any = {};
+    if (updatedData.title !== undefined) updatePayload.title = updatedData.title;
+    if (updatedData.description !== undefined) updatePayload.description = updatedData.description;
+    if (updatedData.status !== undefined) updatePayload.status = updatedData.status;
+    if (updatedData.location !== undefined) updatePayload.location = updatedData.location;
+
+    const { error } = await supabase.from('castings').update(updatePayload).eq('id', id);
+    if (error) { console.error('Error updating casting:', error); return; }
+    await fetchCastings();
   };
 
-  const deleteCasting = (id: number) => {
-    setCastings(prev => prev.filter(casting => casting.id !== id));
+  const deleteCasting = async (id: number) => {
+    const { error } = await supabase.from('castings').delete().eq('id', id);
+    if (error) { console.error('Error deleting casting:', error); return; }
+    await fetchCastings();
   };
 
-  const addApplication = (application: Omit<CastingApplication, 'id' | 'submittedAt'>) => {
-    const newApp: CastingApplication = {
-      ...application,
-      id: `app-${Date.now()}`,
-      submittedAt: new Date().toISOString(),
-    };
-    setApplications(prev => [...prev, newApp]);
-    // Increment application count on casting
-    setCastings(prev => prev.map(c =>
-      c.id === application.castingId
-        ? { ...c, applications: (c.applications || 0) + 1 }
-        : c
-    ));
+  const addApplication = async (application: Omit<CastingApplication, 'id' | 'submittedAt'>) => {
+    const { error } = await supabase.from('applications').insert({
+      casting_id: application.castingId,
+      role_id: application.roleId,
+      user_id: application.userId!,
+      applicant_name: application.applicantName,
+      applicant_email: application.applicantEmail,
+      cover_message: application.coverMessage,
+      experience: application.experience,
+      availability: application.availability,
+      photo_files: application.photoFiles,
+      video_showreel: application.videoShowreel,
+      portfolio_file: application.portfolioFile,
+    });
+
+    if (error) { console.error('Error adding application:', error); return; }
+
+    // Increment application count
+    try {
+      const { data: castingData } = await supabase
+        .from('castings')
+        .select('applications_count')
+        .eq('id', application.castingId)
+        .single();
+      if (castingData) {
+        await supabase
+          .from('castings')
+          .update({ applications_count: (castingData.applications_count || 0) + 1 })
+          .eq('id', application.castingId);
+      }
+    } catch (e) {
+      console.error('Error incrementing count:', e);
+    }
+
+    await fetchApplications();
   };
 
   const getApplicationsForCasting = (castingId: number) => {
@@ -428,9 +324,10 @@ export const CastingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   return (
     <CastingContext.Provider value={{
-      castings, applications,
+      castings, applications, loading,
       addCasting, updateCasting, deleteCasting,
-      addApplication, getApplicationsForCasting, getApplicationsForRole
+      addApplication, getApplicationsForCasting, getApplicationsForRole,
+      refreshCastings: fetchCastings,
     }}>
       {children}
     </CastingContext.Provider>
