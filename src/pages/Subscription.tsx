@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import Layout from "@/components/Layout";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const Subscription = () => {
   const navigate = useNavigate();
