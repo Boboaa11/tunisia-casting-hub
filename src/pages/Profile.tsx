@@ -13,6 +13,7 @@ import { Camera, Upload, Star, Eye, MessageCircle, Calendar, ArrowLeft } from "l
 import ProfileViewMode from "@/components/ProfileViewMode";
 
 const Profile = () => {
+  const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState({
     firstName: "Amira",
     lastName: "Ben Salem",
