@@ -12,6 +12,38 @@ export interface User {
   bio?: string;
   location?: string;
   phone?: string;
+  firstName?: string;
+  lastName?: string;
+  talentType?: string;
+  city?: string;
+  specialSkills?: string[];
+  height?: string;
+  weight?: string;
+  eyeColor?: string;
+  hairColor?: string;
+  portfolioPhotos?: string[];
+}
+
+export interface ProfileCompletionItem {
+  key: string;
+  label: string;
+  weight: number;
+  complete: boolean;
+}
+
+export function getProfileCompletion(user: User | null): { percentage: number; items: ProfileCompletionItem[] } {
+  if (!user) return { percentage: 0, items: [] };
+  const items: ProfileCompletionItem[] = [
+    { key: 'avatar', label: 'Photo de profil', weight: 20, complete: !!user.avatar },
+    { key: 'talentType', label: 'Type de talent', weight: 15, complete: !!user.talentType },
+    { key: 'city', label: 'Ville', weight: 10, complete: !!user.city },
+    { key: 'bio', label: 'Biographie', weight: 20, complete: !!user.bio },
+    { key: 'specialSkills', label: 'Compétences spéciales', weight: 15, complete: !!(user.specialSkills && user.specialSkills.length > 0) },
+    { key: 'physical', label: 'Caractéristiques physiques', weight: 10, complete: !!(user.height && user.weight && user.eyeColor && user.hairColor) },
+    { key: 'portfolio', label: 'Photos du portfolio', weight: 10, complete: !!(user.portfolioPhotos && user.portfolioPhotos.length > 0) },
+  ];
+  const percentage = items.reduce((sum, item) => sum + (item.complete ? item.weight : 0), 0);
+  return { percentage, items };
 }
 
 export interface DemoUser extends User {
