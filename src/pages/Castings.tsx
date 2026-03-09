@@ -150,7 +150,7 @@ const Castings = () => {
               return (
                 <Card
                   key={casting.id}
-                  className="shadow-card hover:shadow-elegant transition-all duration-300 bg-card animate-slide-up overflow-hidden border-border/60"
+                  className="bg-white shadow-[0_2px_8px_-2px_hsl(340_15%_12%/0.08)] hover:shadow-[0_4px_16px_-4px_hsl(340_15%_12%/0.12)] transition-all duration-300 animate-slide-up overflow-hidden border border-[hsl(30_8%_92%)]"
                   style={{ animationDelay: `${index * 0.08}s` }}
                 >
                   {/* Card Header — Project Name */}
