@@ -224,6 +224,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       logout,
       setSubscription,
       completeOnboarding,
+      refreshUser,
       redirectAfterAuth,
       setRedirectAfterAuth
     }}>
