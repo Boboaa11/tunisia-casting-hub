@@ -25,7 +25,8 @@ import TalentSearch from "./pages/TalentSearch";
 import Billing from "./pages/Billing";
 import Subscription from "./pages/Subscription";
 import ApplicationManagement from "./pages/ApplicationManagement";
-
+import TalentOnboarding from "./pages/TalentOnboarding";
+import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient();
 
