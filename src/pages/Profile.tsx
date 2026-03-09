@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,66 +9,199 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Camera, Upload, Eye, Calendar, ArrowLeft, BookOpen } from "lucide-react";
+import { Camera, Upload, ArrowLeft, BookOpen, Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 import ProfileViewMode from "@/components/ProfileViewMode";
 
-const Profile = () => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [profile, setProfile] = useState({
-    firstName: "Amira",
-    lastName: "Ben Salem",
-    email: "amira.bensalem@email.com",
-    phone: "+216 98 123 456",
-    dateOfBirth: "1995-05-15",
-    city: "Tunis",
-    bio: "Actrice passionnée avec 5 ans d'expérience dans le théâtre et le cinéma. Spécialisée dans les rôles dramatiques et comiques.",
-    talentType: "Acteur/Actrice",
-    experience: "Intermédiaire",
-    height: "165",
-    weight: "55",
-    eyeColor: "Marron",
-    hairColor: "Brun",
-    languages: "Arabe, Français, Anglais",
-    skills: "Théâtre, Improvisation, Danse, Chant",
-    bookUrl: ""
-  });
+interface ProfileForm {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  dateOfBirth: string;
+  city: string;
+  bio: string;
+  talentType: string;
+  experience: string;
+  height: string;
+  weight: string;
+  eyeColor: string;
+  hairColor: string;
+  languages: string;
+  skills: string;
+  bookUrl: string;
+}
 
-  const [stats] = useState({
-    profileViews: 1247,
-    applications: 15
-  });
+const emptyProfile: ProfileForm = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  dateOfBirth: "",
+  city: "",
+  bio: "",
+  talentType: "",
+  experience: "",
+  height: "",
+  weight: "",
+  eyeColor: "",
+  hairColor: "",
+  languages: "",
+  skills: "",
+  bookUrl: "",
+};
+
+const Profile = () => {
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [profile, setProfile] = useState<ProfileForm>(emptyProfile);
+  const [stats] = useState({ profileViews: 0, applications: 0 });
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      navigate("/login");
+    }
+  }, [authLoading, isAuthenticated, navigate]);
+
+  // Load profile from DB
+  useEffect(() => {
+    if (!user) return;
+
+    const loadProfile = async () => {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from("talent_profiles")
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Error loading profile:", error);
+        setIsLoading(false);
+        return;
+      }
+
+      if (data) {
+        setProfile({
+          firstName: data.first_name || "",
+          lastName: data.last_name || "",
+          email: user.email || "",
+          phone: "",
+          dateOfBirth: "",
+          city: data.city || "",
+          bio: data.bio || "",
+          talentType: data.talent_type || "",
+          experience: "",
+          height: data.height || "",
+          weight: data.weight || "",
+          eyeColor: data.eye_color || "",
+          hairColor: data.hair_color || "",
+          languages: (data.languages || []).join(", "),
+          skills: (data.skills || []).join(", "),
+          bookUrl: data.book_url || "",
+        });
+      } else {
+        setProfile({ ...emptyProfile, email: user.email || "" });
+      }
+      setIsLoading(false);
+    };
+
+    loadProfile();
+  }, [user]);
+
+  // Load application count
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("applications")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .then(({ count }) => {
+        if (count !== null) {
+          stats.applications = count;
+        }
+      });
+  }, [user]);
 
   const handleInputChange = (field: string, value: string) => {
-    setProfile(prev => ({ ...prev, [field]: value }));
+    setProfile((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleBookUpload = () => {
-    // Simulate book upload — in production this would upload to storage
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'application/pdf';
-    input.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        const url = URL.createObjectURL(file);
-        setProfile(prev => ({ ...prev, bookUrl: url }));
-      }
-    };
-    input.click();
+  const handleSave = async () => {
+    if (!user) return;
+    setIsSaving(true);
+
+    const languagesArr = profile.languages.split(",").map((l) => l.trim()).filter(Boolean);
+    const skillsArr = profile.skills.split(",").map((s) => s.trim()).filter(Boolean);
+
+    const completionItems = [
+      !!profile.talentType,
+      !!profile.city,
+      !!profile.bio,
+      skillsArr.length > 0,
+      !!(profile.height && profile.weight && profile.eyeColor && profile.hairColor),
+    ];
+    const completionPct = Math.round(
+      (completionItems.filter(Boolean).length / completionItems.length) * 100
+    );
+
+    const { error } = await supabase
+      .from("talent_profiles")
+      .update({
+        first_name: profile.firstName,
+        last_name: profile.lastName,
+        city: profile.city || null,
+        bio: profile.bio || null,
+        talent_type: profile.talentType || null,
+        height: profile.height || null,
+        weight: profile.weight || null,
+        eye_color: profile.eyeColor || null,
+        hair_color: profile.hairColor || null,
+        languages: languagesArr,
+        skills: skillsArr,
+        book_url: profile.bookUrl || null,
+        profile_completion_percentage: completionPct,
+      })
+      .eq("user_id", user.id);
+
+    setIsSaving(false);
+
+    if (error) {
+      toast({ title: "Erreur", description: "Impossible de sauvegarder le profil.", variant: "destructive" });
+      console.error("Save error:", error);
+      return;
+    }
+
+    toast({ title: "Profil sauvegardé", description: "Vos modifications ont été enregistrées." });
+    setIsEditing(false);
   };
 
-  const handleSave = () => {
-    console.log("Saving profile:", profile);
-  };
+  if (authLoading || isLoading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </Layout>
+    );
+  }
 
   if (!isEditing) {
     return (
       <Layout>
         <div className="container mx-auto px-4 py-8">
-          <ProfileViewMode 
-            profile={profile} 
-            stats={stats} 
-            onEdit={() => setIsEditing(true)} 
+          <ProfileViewMode
+            profile={profile}
+            stats={stats}
+            onEdit={() => setIsEditing(true)}
           />
         </div>
       </Layout>
@@ -79,11 +212,7 @@ const Profile = () => {
     <Layout>
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <Button 
-            variant="ghost" 
-            onClick={() => setIsEditing(false)}
-            className="mb-4"
-          >
+          <Button variant="ghost" onClick={() => setIsEditing(false)} className="mb-4">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Retour au profil
           </Button>
@@ -92,62 +221,39 @@ const Profile = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Profile Overview */}
           <Card className="lg:col-span-1">
             <CardHeader className="text-center">
               <div className="relative mx-auto w-32 h-32">
                 <Avatar className="w-32 h-32">
                   <AvatarImage src="/placeholder.svg" />
-                  <AvatarFallback className="text-2xl">{profile.firstName.charAt(0)}{profile.lastName.charAt(0)}</AvatarFallback>
+                  <AvatarFallback className="text-2xl">
+                    {profile.firstName.charAt(0)}{profile.lastName.charAt(0)}
+                  </AvatarFallback>
                 </Avatar>
-                <Button
-                  size="sm"
-                  className="absolute bottom-0 right-0 rounded-full w-10 h-10 p-0"
-                >
+                <Button size="sm" className="absolute bottom-0 right-0 rounded-full w-10 h-10 p-0">
                   <Camera className="h-4 w-4" />
                 </Button>
               </div>
               <CardTitle className="text-xl">{profile.firstName} {profile.lastName}</CardTitle>
               <CardDescription>
-                <Badge variant="outline" className="mb-2">{profile.talentType}</Badge>
-                <p>{profile.city}</p>
+                {profile.talentType && <Badge variant="outline" className="mb-2">{profile.talentType}</Badge>}
+                {profile.city && <p>{profile.city}</p>}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 text-center">
-                  <div>
-                    <div className="text-2xl font-bold text-primary">{stats.profileViews}</div>
-                    <div className="text-xs text-muted-foreground">Vues du profil</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-primary">{stats.applications}</div>
-                    <div className="text-xs text-muted-foreground">Candidatures</div>
-                  </div>
-                </div>
-
                 {profile.bookUrl ? (
                   <div className="space-y-2">
                     <Button className="w-full" variant="outline" onClick={() => window.open(profile.bookUrl, '_blank')}>
                       <BookOpen className="h-4 w-4 mr-2" />
                       Voir le Book
                     </Button>
-                    <Button className="w-full" variant="ghost" onClick={handleBookUpload}>
-                      <Upload className="h-4 w-4 mr-2" />
-                      Remplacer le Book
-                    </Button>
                   </div>
-                ) : (
-                  <Button className="w-full" variant="outline" onClick={handleBookUpload}>
-                    <Upload className="h-4 w-4 mr-2" />
-                    Ajouter un Book
-                  </Button>
-                )}
+                ) : null}
               </div>
             </CardContent>
           </Card>
 
-          {/* Profile Details */}
           <Card className="lg:col-span-2">
             <Tabs defaultValue="personal" className="w-full">
               <CardHeader>
@@ -163,58 +269,22 @@ const Profile = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="firstName">Prénom</Label>
-                      <Input
-                        id="firstName"
-                        value={profile.firstName}
-                        onChange={(e) => handleInputChange('firstName', e.target.value)}
-                      />
+                      <Input id="firstName" value={profile.firstName} onChange={(e) => handleInputChange('firstName', e.target.value)} />
                     </div>
                     <div>
                       <Label htmlFor="lastName">Nom</Label>
-                      <Input
-                        id="lastName"
-                        value={profile.lastName}
-                        onChange={(e) => handleInputChange('lastName', e.target.value)}
-                      />
+                      <Input id="lastName" value={profile.lastName} onChange={(e) => handleInputChange('lastName', e.target.value)} />
                     </div>
                   </div>
-
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={profile.email}
-                        onChange={(e) => handleInputChange('email', e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="phone">Téléphone</Label>
-                      <Input
-                        id="phone"
-                        value={profile.phone}
-                        onChange={(e) => handleInputChange('phone', e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="dateOfBirth">Date de Naissance</Label>
-                      <Input
-                        id="dateOfBirth"
-                        type="date"
-                        value={profile.dateOfBirth}
-                        onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
-                      />
+                      <Input id="email" type="email" value={profile.email} disabled className="bg-muted" />
                     </div>
                     <div>
                       <Label htmlFor="city">Ville</Label>
                       <Select value={profile.city} onValueChange={(value) => handleInputChange('city', value)}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder="Sélectionner une ville" /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="Tunis">Tunis</SelectItem>
                           <SelectItem value="Sfax">Sfax</SelectItem>
@@ -232,9 +302,7 @@ const Profile = () => {
                     <div>
                       <Label htmlFor="talentType">Type de Talent</Label>
                       <Select value={profile.talentType} onValueChange={(value) => handleInputChange('talentType', value)}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="Acteur/Actrice">Acteur/Actrice</SelectItem>
                           <SelectItem value="Mannequin">Mannequin</SelectItem>
@@ -247,9 +315,7 @@ const Profile = () => {
                     <div>
                       <Label htmlFor="experience">Niveau d'Expérience</Label>
                       <Select value={profile.experience} onValueChange={(value) => handleInputChange('experience', value)}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="Débutant">Débutant</SelectItem>
                           <SelectItem value="Intermédiaire">Intermédiaire</SelectItem>
@@ -259,36 +325,17 @@ const Profile = () => {
                       </Select>
                     </div>
                   </div>
-
                   <div>
                     <Label htmlFor="bio">Biographie</Label>
-                    <Textarea
-                      id="bio"
-                      rows={4}
-                      value={profile.bio}
-                      onChange={(e) => handleInputChange('bio', e.target.value)}
-                      placeholder="Décrivez votre parcours, vos expériences et vos objectifs..."
-                    />
+                    <Textarea id="bio" rows={4} value={profile.bio} onChange={(e) => handleInputChange('bio', e.target.value)} placeholder="Décrivez votre parcours..." />
                   </div>
-
                   <div>
                     <Label htmlFor="languages">Langues Parlées</Label>
-                    <Input
-                      id="languages"
-                      value={profile.languages}
-                      onChange={(e) => handleInputChange('languages', e.target.value)}
-                      placeholder="Ex: Arabe, Français, Anglais"
-                    />
+                    <Input id="languages" value={profile.languages} onChange={(e) => handleInputChange('languages', e.target.value)} placeholder="Ex: Arabe, Français, Anglais" />
                   </div>
-
                   <div>
                     <Label htmlFor="skills">Compétences Spéciales</Label>
-                    <Input
-                      id="skills"
-                      value={profile.skills}
-                      onChange={(e) => handleInputChange('skills', e.target.value)}
-                      placeholder="Ex: Danse, Chant, Arts martiaux, Équitation"
-                    />
+                    <Input id="skills" value={profile.skills} onChange={(e) => handleInputChange('skills', e.target.value)} placeholder="Ex: Danse, Chant, Arts martiaux" />
                   </div>
                 </TabsContent>
 
@@ -296,31 +343,18 @@ const Profile = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="height">Taille (cm)</Label>
-                      <Input
-                        id="height"
-                        value={profile.height}
-                        onChange={(e) => handleInputChange('height', e.target.value)}
-                        placeholder="165"
-                      />
+                      <Input id="height" value={profile.height} onChange={(e) => handleInputChange('height', e.target.value)} placeholder="165" />
                     </div>
                     <div>
                       <Label htmlFor="weight">Poids (kg)</Label>
-                      <Input
-                        id="weight"
-                        value={profile.weight}
-                        onChange={(e) => handleInputChange('weight', e.target.value)}
-                        placeholder="55"
-                      />
+                      <Input id="weight" value={profile.weight} onChange={(e) => handleInputChange('weight', e.target.value)} placeholder="55" />
                     </div>
                   </div>
-
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="eyeColor">Couleur des Yeux</Label>
                       <Select value={profile.eyeColor} onValueChange={(value) => handleInputChange('eyeColor', value)}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="Marron">Marron</SelectItem>
                           <SelectItem value="Noir">Noir</SelectItem>
@@ -333,9 +367,7 @@ const Profile = () => {
                     <div>
                       <Label htmlFor="hairColor">Couleur des Cheveux</Label>
                       <Select value={profile.hairColor} onValueChange={(value) => handleInputChange('hairColor', value)}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="Noir">Noir</SelectItem>
                           <SelectItem value="Brun">Brun</SelectItem>
@@ -347,25 +379,14 @@ const Profile = () => {
                       </Select>
                     </div>
                   </div>
-
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Photos du Portfolio</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="relative aspect-square border-2 border-dashed border-muted rounded-lg flex items-center justify-center hover:border-primary transition-colors cursor-pointer">
-                          <div className="text-center">
-                            <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                            <p className="text-sm text-muted-foreground">Ajouter une photo</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
                 </TabsContent>
 
                 <div className="flex justify-end space-x-2 mt-6">
                   <Button variant="outline" onClick={() => setIsEditing(false)}>Annuler</Button>
-                  <Button onClick={handleSave}>Sauvegarder</Button>
+                  <Button onClick={handleSave} disabled={isSaving}>
+                    {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                    Sauvegarder
+                  </Button>
                 </div>
               </CardContent>
             </Tabs>
