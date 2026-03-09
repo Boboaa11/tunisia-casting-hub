@@ -47,7 +47,7 @@ const Header = () => {
         { name: "Dashboard", path: "/producer-dashboard" },
         { name: "Créer un Casting", path: "/create-casting" },
         { name: "Recherche Talents", path: "/talent-search" },
-        { name: "Candidatures Reçues", path: "/my-applications" },
+        { name: "Candidatures Reçues", path: "/applications-management" },
         { name: "Messages", path: "/messages" }
       ];
     }
