@@ -435,7 +435,6 @@ const SignUp = () => {
                   </CardContent>
                 </Card>
               )}
-              )}
 
               {/* STEP 2 — Profile */}
               {talentStep === 2 && (
