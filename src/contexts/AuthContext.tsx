@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
 
 export type UserRole = 'talent' | 'producer' | 'admin' | null;
 
@@ -46,79 +48,15 @@ export function getProfileCompletion(user: User | null): { percentage: number; i
   return { percentage, items };
 }
 
-export interface DemoUser extends User {
-  password: string;
-  label: string;
-  description: string;
-}
-
-export const DEMO_USERS: DemoUser[] = [
-  {
-    id: 'demo-talent-sub',
-    email: 'talent@demo.tn',
-    password: 'demo',
-    name: 'Amira Ben Salah',
-    role: 'talent',
-    hasSubscription: true,
-    label: 'Talent (Abonnée)',
-    description: 'Actrice professionnelle avec abonnement actif — accès complet aux candidatures.',
-    avatar: '',
-    bio: 'Actrice et mannequin basée à Tunis. 5 ans d\'expérience en cinéma et théâtre.',
-    location: 'Tunis, Tunisie',
-    phone: '+216 50 123 456',
-  },
-  {
-    id: 'demo-talent-free',
-    email: 'free@demo.tn',
-    password: 'demo',
-    name: 'Karim Hammami',
-    role: 'talent',
-    hasSubscription: false,
-    label: 'Talent (Non abonné)',
-    description: 'Acteur débutant sans abonnement — teste le paywall d\'application.',
-    avatar: '',
-    bio: 'Jeune acteur passionné, diplômé du conservatoire de Tunis.',
-    location: 'Sousse, Tunisie',
-    phone: '+216 55 987 654',
-  },
-  {
-    id: 'demo-producer',
-    email: 'producer@demo.tn',
-    password: 'demo',
-    name: 'Nadia Bouazizi',
-    role: 'producer',
-    hasSubscription: true,
-    label: 'Productrice',
-    description: 'Directrice de casting — gère les projets et consulte les candidatures.',
-    avatar: '',
-    bio: 'Directrice de casting chez Carthage Productions. 10 ans d\'expérience.',
-    location: 'Tunis, Tunisie',
-    phone: '+216 71 234 567',
-  },
-  {
-    id: 'demo-admin',
-    email: 'admin@demo.tn',
-    password: 'demo',
-    name: 'Slim Trabelsi',
-    role: 'admin',
-    hasSubscription: true,
-    label: 'Administrateur',
-    description: 'Accès administrateur — supervision complète de la plateforme.',
-    avatar: '',
-    bio: 'Administrateur de la plateforme Tunisia Casting.',
-    location: 'Tunis, Tunisie',
-    phone: '+216 71 000 000',
-  },
-];
-
 interface AuthContextType {
   user: User | null;
+  session: Session | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   onboardingComplete: boolean;
-  login: (email: string, password: string, role: UserRole) => void;
-  loginAsDemo: (demoUserId: string) => void;
-  signup: (email: string, password: string, name: string, role: UserRole) => void;
-  logout: () => void;
+  login: (email: string, password: string) => Promise<{ error?: string }>;
+  signup: (email: string, password: string, firstName: string, lastName: string) => Promise<{ error?: string }>;
+  logout: () => Promise<void>;
   setSubscription: (hasSubscription: boolean) => void;
   completeOnboarding: () => void;
   redirectAfterAuth: string | null;
@@ -135,57 +73,124 @@ export const useAuth = () => {
   return context;
 };
 
+async function fetchUserProfile(supabaseUser: SupabaseUser): Promise<User> {
+  const meta = supabaseUser.user_metadata || {};
+  
+  // Try to load talent profile
+  const { data: profile } = await supabase
+    .from('talent_profiles')
+    .select('*')
+    .eq('user_id', supabaseUser.id)
+    .maybeSingle();
+
+  // Check active subscription
+  const { data: subscription } = await supabase
+    .from('subscriptions')
+    .select('*')
+    .eq('user_id', supabaseUser.id)
+    .eq('status', 'active')
+    .maybeSingle();
+
+  const firstName = profile?.first_name || meta.first_name || '';
+  const lastName = profile?.last_name || meta.last_name || '';
+
+  return {
+    id: supabaseUser.id,
+    email: supabaseUser.email || '',
+    name: [firstName, lastName].filter(Boolean).join(' ') || supabaseUser.email?.split('@')[0] || '',
+    role: (meta.role as UserRole) || 'talent',
+    hasSubscription: !!subscription,
+    avatar: profile?.photo_url || undefined,
+    bio: profile?.bio || undefined,
+    firstName,
+    lastName,
+    talentType: profile?.talent_type || undefined,
+    city: profile?.city || undefined,
+    specialSkills: profile?.skills || undefined,
+    height: profile?.height || undefined,
+    weight: profile?.weight || undefined,
+    eyeColor: profile?.eye_color || undefined,
+    hairColor: profile?.hair_color || undefined,
+  };
+}
+
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [onboardingComplete, setOnboardingComplete] = useState<boolean>(true);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [onboardingComplete, setOnboardingComplete] = useState(true);
   const [redirectAfterAuth, setRedirectAfterAuth] = useState<string | null>(null);
 
-  const login = (email: string, password: string, role: UserRole) => {
-    // Check if it's a demo user first
-    const demoUser = DEMO_USERS.find(u => u.email === email);
-    if (demoUser) {
-      const { password: _, label: __, description: ___, ...userData } = demoUser;
-      setUser(userData);
-      return;
-    }
-    setUser({
-      id: '1',
-      email,
-      name: email.split('@')[0],
-      role,
-      hasSubscription: false
+  useEffect(() => {
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+      setSession(newSession);
+      if (newSession?.user) {
+        // Use setTimeout to avoid Supabase auth deadlock
+        setTimeout(async () => {
+          const profile = await fetchUserProfile(newSession.user);
+          setUser(profile);
+          setIsLoading(false);
+        }, 0);
+      } else {
+        setUser(null);
+        setIsLoading(false);
+      }
     });
-  };
 
-  const loginAsDemo = (demoUserId: string) => {
-    const demoUser = DEMO_USERS.find(u => u.id === demoUserId);
-    if (demoUser) {
-      const { password: _, label: __, description: ___, ...userData } = demoUser;
-      setUser(userData);
-    }
-  };
-
-  const signup = (email: string, password: string, name: string, role: UserRole) => {
-    setUser({
-      id: '1',
-      email,
-      name,
-      role,
-      hasSubscription: false
+    // Then check existing session
+    supabase.auth.getSession().then(async ({ data: { session: existingSession } }) => {
+      setSession(existingSession);
+      if (existingSession?.user) {
+        const profile = await fetchUserProfile(existingSession.user);
+        setUser(profile);
+      }
+      setIsLoading(false);
     });
-    if (role === 'talent') {
-      setOnboardingComplete(false);
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const login = async (email: string, password: string): Promise<{ error?: string }> => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      if (error.message === 'Email not confirmed') {
+        return { error: 'Veuillez confirmer votre email avant de vous connecter.' };
+      }
+      return { error: 'Email ou mot de passe incorrect.' };
     }
+    return {};
   };
 
-  const logout = () => {
+  const signup = async (email: string, password: string, firstName: string, lastName: string): Promise<{ error?: string }> => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          first_name: firstName,
+          last_name: lastName,
+          role: 'talent',
+        },
+        emailRedirectTo: window.location.origin,
+      },
+    });
+    if (error) {
+      if (error.message.includes('already registered')) {
+        return { error: 'Un compte avec cet email existe déjà.' };
+      }
+      return { error: error.message };
+    }
+    setOnboardingComplete(false);
+    return {};
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
+    setSession(null);
     setOnboardingComplete(true);
     setRedirectAfterAuth(null);
-  };
-
-  const completeOnboarding = () => {
-    setOnboardingComplete(true);
   };
 
   const setSubscription = (hasSubscription: boolean) => {
@@ -194,13 +199,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const completeOnboarding = () => {
+    setOnboardingComplete(true);
+  };
+
   return (
     <AuthContext.Provider value={{
       user,
+      session,
       isAuthenticated: !!user,
+      isLoading,
       onboardingComplete,
       login,
-      loginAsDemo,
       signup,
       logout,
       setSubscription,
