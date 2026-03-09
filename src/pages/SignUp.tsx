@@ -42,19 +42,17 @@ const SignUp = () => {
     agreeToMarketing: false
   });
 
-   // Producer form data
+   // Producer/Casting Director request form data
    const [producerFormData, setProducerFormData] = useState({
-     companyName: "",
-     contactName: "",
+     fullName: "",
      email: "",
      phone: "",
-     password: "",
-     confirmPassword: "",
+     companyName: "",
      productionType: "",
-     website: "",
-     agreeToTerms: false,
-     agreeToMarketing: false
+     description: "",
+     certifyInfo: false,
    });
+   const [requestSubmitted, setRequestSubmitted] = useState(false);
  
   const talentValidation = useFormValidation();
   const producerValidation = useFormValidation();
