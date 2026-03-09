@@ -172,109 +172,109 @@ const SignUp = () => {
  
    // Account type selection screen
    if (step === 'choose') {
-     return (
-       <Layout>
-         <div className="min-h-screen bg-gradient-card flex items-center justify-center py-12 px-4">
-           <div className="max-w-2xl w-full space-y-8 animate-fade-in">
-             <div className="text-center">
-               <div className="flex justify-center mb-4">
-                 <div className="p-3 bg-gradient-hero rounded-xl shadow-glow">
-                   <Star className="h-8 w-8 text-primary-foreground" />
-                 </div>
-               </div>
-               <h1 className="text-3xl font-bold text-foreground">Rejoignez Tunisia Casting</h1>
-               <p className="text-muted-foreground mt-2">
-                 Choisissez votre type de compte pour commencer
-               </p>
-             </div>
- 
-             <div className="grid md:grid-cols-2 gap-6">
-               {/* Talent Card */}
-               <Card 
-                 className="shadow-elegant bg-card cursor-pointer transition-all duration-300 hover:shadow-glow hover:scale-105 border-2 border-transparent hover:border-primary"
-                 onClick={() => handleSelectAccountType('talent')}
-               >
-                 <CardContent className="p-8 text-center">
-                   <div className="flex justify-center mb-4">
-                     <div className="p-4 bg-gradient-hero rounded-full">
-                       <Users className="h-10 w-10 text-primary-foreground" />
-                     </div>
-                   </div>
-                   <h2 className="text-2xl font-bold text-foreground mb-2">Je suis un Talent</h2>
-                   <p className="text-muted-foreground mb-4">
-                     Acteur, mannequin, danseur, musicien... Trouvez votre prochaine opportunité
-                   </p>
-                   <ul className="text-sm text-muted-foreground space-y-2 text-left">
-                     <li className="flex items-center gap-2">
-                       <span className="text-primary">✓</span> Accès aux castings exclusifs
-                     </li>
-                     <li className="flex items-center gap-2">
-                       <span className="text-primary">✓</span> Créez votre profil professionnel
-                     </li>
-                     <li className="flex items-center gap-2">
-                       <span className="text-primary">✓</span> Postulez en un clic
-                     </li>
-                     <li className="flex items-center gap-2">
-                       <span className="text-primary">✓</span> Recevez des notifications
-                     </li>
-                   </ul>
-                   <Button variant="hero" className="w-full mt-6">
-                     S'inscrire comme Talent
-                   </Button>
-                 </CardContent>
-               </Card>
- 
-               {/* Producer Card */}
-               <Card 
-                 className="shadow-elegant bg-card cursor-pointer transition-all duration-300 hover:shadow-glow hover:scale-105 border-2 border-transparent hover:border-primary"
-                 onClick={() => handleSelectAccountType('producer')}
-               >
-                 <CardContent className="p-8 text-center">
-                   <div className="flex justify-center mb-4">
-                     <div className="p-4 bg-gradient-to-r from-accent to-accent/80 rounded-full">
-                       <Clapperboard className="h-10 w-10 text-accent-foreground" />
-                     </div>
-                   </div>
-                    <h2 className="text-2xl font-bold text-foreground mb-2">Je suis Directeur de Casting</h2>
-                    <p className="text-muted-foreground mb-4">
+      return (
+        <Layout>
+          <div className="h-[calc(100vh-4rem)] bg-gradient-card flex items-center justify-center px-4">
+            <div className="max-w-2xl w-full space-y-4 animate-fade-in">
+              <div className="text-center space-y-1">
+                <div className="flex justify-center mb-2">
+                  <div className="p-2.5 bg-gradient-hero rounded-xl shadow-glow">
+                    <Star className="h-6 w-6 text-primary-foreground" />
+                  </div>
+                </div>
+                <h1 className="text-2xl font-bold text-foreground">Rejoignez Tunisia Casting</h1>
+                <p className="text-sm text-muted-foreground">
+                  Choisissez votre type de compte pour commencer
+                </p>
+              </div>
+  
+              <div className="grid md:grid-cols-2 gap-4">
+                {/* Talent Card */}
+                <Card 
+                  className="shadow-elegant bg-card cursor-pointer transition-all duration-300 hover:shadow-glow hover:scale-[1.03] border-2 border-transparent hover:border-primary"
+                  onClick={() => handleSelectAccountType('talent')}
+                >
+                  <CardContent className="p-5 text-center">
+                    <div className="flex justify-center mb-2.5">
+                      <div className="p-3 bg-gradient-hero rounded-full">
+                        <Users className="h-7 w-7 text-primary-foreground" />
+                      </div>
+                    </div>
+                    <h2 className="text-lg font-bold text-foreground mb-1">Je suis un Talent</h2>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Acteur, mannequin, danseur, musicien... Trouvez votre prochaine opportunité
+                    </p>
+                    <ul className="text-xs text-muted-foreground space-y-1 text-left">
+                      <li className="flex items-center gap-1.5">
+                        <span className="text-primary">✓</span> Accès aux castings exclusifs
+                      </li>
+                      <li className="flex items-center gap-1.5">
+                        <span className="text-primary">✓</span> Créez votre profil professionnel
+                      </li>
+                      <li className="flex items-center gap-1.5">
+                        <span className="text-primary">✓</span> Postulez en un clic
+                      </li>
+                      <li className="flex items-center gap-1.5">
+                        <span className="text-primary">✓</span> Recevez des notifications
+                      </li>
+                    </ul>
+                    <Button variant="hero" className="w-full mt-4 h-9 text-sm">
+                      S'inscrire comme Talent
+                    </Button>
+                  </CardContent>
+                </Card>
+  
+                {/* Producer Card */}
+                <Card 
+                  className="shadow-elegant bg-card cursor-pointer transition-all duration-300 hover:shadow-glow hover:scale-[1.03] border-2 border-transparent hover:border-primary"
+                  onClick={() => handleSelectAccountType('producer')}
+                >
+                  <CardContent className="p-5 text-center">
+                    <div className="flex justify-center mb-2.5">
+                      <div className="p-3 bg-gradient-to-r from-accent to-accent/80 rounded-full">
+                        <Clapperboard className="h-7 w-7 text-accent-foreground" />
+                      </div>
+                    </div>
+                    <h2 className="text-lg font-bold text-foreground mb-1">Je suis Directeur de Casting</h2>
+                    <p className="text-xs text-muted-foreground mb-3">
                       Agence, studio, réalisateur... Demandez un accès pour publier vos castings
                     </p>
-                   <ul className="text-sm text-muted-foreground space-y-2 text-left">
-                     <li className="flex items-center gap-2">
-                       <span className="text-primary">✓</span> Publiez vos castings
-                     </li>
-                     <li className="flex items-center gap-2">
-                       <span className="text-primary">✓</span> Accès à la base de talents
-                     </li>
-                     <li className="flex items-center gap-2">
-                       <span className="text-primary">✓</span> Gérez vos candidatures
-                     </li>
-                     <li className="flex items-center gap-2">
-                       <span className="text-primary">✓</span> Outils de sélection avancés
-                     </li>
-                   </ul>
-                    <Button variant="outline" className="w-full mt-6 border-accent text-accent hover:bg-accent hover:text-accent-foreground">
+                    <ul className="text-xs text-muted-foreground space-y-1 text-left">
+                      <li className="flex items-center gap-1.5">
+                        <span className="text-primary">✓</span> Publiez vos castings
+                      </li>
+                      <li className="flex items-center gap-1.5">
+                        <span className="text-primary">✓</span> Accès à la base de talents
+                      </li>
+                      <li className="flex items-center gap-1.5">
+                        <span className="text-primary">✓</span> Gérez vos candidatures
+                      </li>
+                      <li className="flex items-center gap-1.5">
+                        <span className="text-primary">✓</span> Outils de sélection avancés
+                      </li>
+                    </ul>
+                    <Button variant="outline" className="w-full mt-4 h-9 text-sm border-accent text-accent hover:bg-accent hover:text-accent-foreground">
                       Demander un accès
                     </Button>
-                 </CardContent>
-               </Card>
-             </div>
- 
-             <div className="text-center">
-               <p className="text-sm text-muted-foreground">
-                 Vous avez déjà un compte ?{" "}
-                 <Link
-                   to="/login"
-                   className="text-primary hover:text-primary-glow font-medium transition-colors"
-                 >
-                   Connectez-vous ici
-                 </Link>
-               </p>
-             </div>
-           </div>
-         </div>
-       </Layout>
-     );
+                  </CardContent>
+                </Card>
+              </div>
+  
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground">
+                  Vous avez déjà un compte ?{" "}
+                  <Link
+                    to="/login"
+                    className="text-primary hover:text-primary-glow font-medium transition-colors"
+                  >
+                    Connectez-vous ici
+                  </Link>
+                </p>
+              </div>
+            </div>
+          </div>
+        </Layout>
+      );
    }
  
    // Talent Registration Form
