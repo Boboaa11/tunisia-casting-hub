@@ -204,6 +204,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setOnboardingComplete(true);
   };
 
+  const refreshUser = async () => {
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    if (currentSession?.user) {
+      const profile = await fetchUserProfile(currentSession.user);
+      setUser(profile);
+    }
+  };
+
   return (
     <AuthContext.Provider value={{
       user,
