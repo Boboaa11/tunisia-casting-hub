@@ -253,9 +253,9 @@ const SignUp = () => {
                        <span className="text-primary">✓</span> Outils de sélection avancés
                      </li>
                    </ul>
-                   <Button variant="outline" className="w-full mt-6 border-accent text-accent hover:bg-accent hover:text-accent-foreground">
-                     S'inscrire comme Producteur
-                   </Button>
+                    <Button variant="outline" className="w-full mt-6 border-accent text-accent hover:bg-accent hover:text-accent-foreground">
+                      Demander un accès
+                    </Button>
                  </CardContent>
                </Card>
              </div>
