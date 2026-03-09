@@ -128,6 +128,8 @@ const Castings = () => {
     <Layout>
       <div className="min-h-screen bg-[hsl(40_10%_96%)] py-8">
         <div className="max-w-[900px] mx-auto px-4">
+          <ProfileCompletionBanner />
+
           {/* Search and Filters */}
           <div className="mb-8 animate-slide-up">
             <div className="flex flex-col md:flex-row gap-4 mb-6">
