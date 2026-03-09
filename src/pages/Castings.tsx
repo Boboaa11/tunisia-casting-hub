@@ -7,9 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { Search, MapPin, Calendar, Film, Tv, Theater, Clock, DollarSign, Star, Users, ChevronRight, User } from "lucide-react";
 import Layout from "@/components/Layout";
 import { useCasting, Casting, CastingRole } from "@/contexts/CastingContext";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, getProfileCompletion } from "@/contexts/AuthContext";
 import CastingApplicationDialog from "@/components/CastingApplicationDialog";
 import CastingDetailPanel from "@/components/CastingDetailPanel";
+import ProfileCompletionBanner from "@/components/ProfileCompletionBanner";
+import ProfileGateModal from "@/components/ProfileGateModal";
+import SubscriptionGateModal from "@/components/SubscriptionGateModal";
 
 const Castings = () => {
   const navigate = useNavigate();
