@@ -92,7 +92,7 @@ const Billing = () => {
         "Analytics avancées",
         "Recherche de talents premium",
         "Support dédié",
-        "API access"
+        "Accès API"
       ],
       limitations: [],
       popular: false
@@ -337,7 +337,7 @@ const Billing = () => {
                       
                       {plan.limitations.length > 0 && (
                         <div className="space-y-2 pt-2 border-t">
-                          <p className="text-sm font-medium text-muted-foreground">Limitations:</p>
+                          <p className="text-sm font-medium text-muted-foreground">Limitations :</p>
                           {plan.limitations.map((limitation) => (
                             <div key={limitation} className="flex items-center gap-2">
                               <div className="h-4 w-4 rounded-full border border-muted-foreground"></div>

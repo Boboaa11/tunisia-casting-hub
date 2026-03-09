@@ -76,7 +76,7 @@ const Subscription = () => {
               </div>
               {isActive ? (
                 <Badge className="bg-green-600 hover:bg-green-600 text-white gap-1.5 px-3 py-1">
-                  <Shield className="h-3.5 w-3.5" /> Pro Member
+                  <Shield className="h-3.5 w-3.5" /> Membre Pro
                 </Badge>
               ) : (
                 <Badge variant="destructive" className="gap-1.5 px-3 py-1">
