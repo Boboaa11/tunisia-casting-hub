@@ -139,29 +139,36 @@ const Profile = () => {
     setProfile((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !user) return;
+    if (!file) return;
 
     if (!file.type.startsWith("image/")) {
       toast({ title: "Erreur", description: "Veuillez sélectionner une image.", variant: "destructive" });
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast({ title: "Erreur", description: "L'image ne doit pas dépasser 5 Mo.", variant: "destructive" });
+    if (file.size > 10 * 1024 * 1024) {
+      toast({ title: "Erreur", description: "L'image ne doit pas dépasser 10 Mo.", variant: "destructive" });
       return;
     }
 
+    const reader = new FileReader();
+    reader.onload = () => setCropImageSrc(reader.result as string);
+    reader.readAsDataURL(file);
+    // Reset input so the same file can be re-selected
+    e.target.value = "";
+  };
+
+  const handleCroppedUpload = async (blob: Blob) => {
+    if (!user) return;
     setIsUploading(true);
 
-    const fileExt = file.name.split(".").pop();
-    const filePath = `${user.id}/avatar.${fileExt}`;
+    const filePath = `${user.id}/avatar.jpg`;
 
-    // Upload to storage
     const { error: uploadError } = await supabase.storage
       .from("avatars")
-      .upload(filePath, file, { upsert: true });
+      .upload(filePath, blob, { upsert: true, contentType: "image/jpeg" });
 
     if (uploadError) {
       console.error("Upload error:", uploadError);
@@ -170,17 +177,16 @@ const Profile = () => {
       return;
     }
 
-    // Get public URL
     const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(filePath);
     const photoUrl = `${urlData.publicUrl}?t=${Date.now()}`;
 
-    // Update talent_profiles
     const { error: updateError } = await supabase
       .from("talent_profiles")
       .update({ photo_url: photoUrl })
       .eq("user_id", user.id);
 
     setIsUploading(false);
+    setCropImageSrc(null);
 
     if (updateError) {
       console.error("Update error:", updateError);
