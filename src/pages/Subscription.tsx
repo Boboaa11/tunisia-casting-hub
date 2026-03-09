@@ -10,10 +10,16 @@ import {
 } from "lucide-react";
 import Layout from "@/components/Layout";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const Subscription = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { toast } = useToast();
+
+  const handleComingSoon = (action: string) => {
+    toast({ title: "Bientôt disponible", description: `La fonctionnalité "${action}" sera disponible prochainement.` });
+  };
 
   // Mock subscription data based on user state
   const isActive = user?.hasSubscription ?? false;
@@ -58,7 +64,7 @@ const Subscription = () => {
                 <Button
                   variant="destructive"
                   size="sm"
-                  onClick={() => navigate("/subscription/plans")}
+                  onClick={() => handleComingSoon("Renouveler l'abonnement")}
                   className="shrink-0"
                 >
                   Renouveler <ArrowRight className="h-4 w-4 ml-1" />
@@ -105,13 +111,13 @@ const Subscription = () => {
 
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-3 pt-2 border-t">
-                <Button variant="outline" size="sm" className="gap-2">
+                <Button variant="outline" size="sm" className="gap-2" onClick={() => handleComingSoon("Modifier le paiement")}>
                   <CreditCard className="h-4 w-4" /> Modifier le paiement
                 </Button>
-                <Button variant="outline" size="sm" className="gap-2">
+                <Button variant="outline" size="sm" className="gap-2" onClick={() => handleComingSoon("Changer de plan")}>
                   <RefreshCw className="h-4 w-4" /> Changer de plan
                 </Button>
-                <Button variant="ghost" size="sm" className="gap-2 text-destructive hover:text-destructive">
+                <Button variant="ghost" size="sm" className="gap-2 text-destructive hover:text-destructive" onClick={() => handleComingSoon("Annuler l'abonnement")}>
                   <XCircle className="h-4 w-4" /> Annuler l'abonnement
                 </Button>
               </div>

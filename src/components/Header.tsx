@@ -47,7 +47,7 @@ const Header = () => {
         { name: "Dashboard", path: "/producer-dashboard" },
         { name: "Créer un Casting", path: "/create-casting" },
         { name: "Recherche Talents", path: "/talent-search" },
-        { name: "Candidatures Reçues", path: "/my-applications" },
+        { name: "Candidatures Reçues", path: "/applications-management" },
         { name: "Messages", path: "/messages" }
       ];
     }
@@ -148,7 +148,7 @@ const Header = () => {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link to="/messages" className="cursor-pointer">
+                      <Link to="/settings" className="cursor-pointer">
                         <Settings className="mr-2 h-4 w-4" />
                         Paramètres
                       </Link>
