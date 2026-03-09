@@ -26,6 +26,10 @@ const Castings = () => {
   const [applicationDialogOpen, setApplicationDialogOpen] = useState(false);
   const [selectedCasting, setSelectedCasting] = useState<Casting | null>(null);
   const [selectedRole, setSelectedRole] = useState<CastingRole | null>(null);
+  const [profileGateOpen, setProfileGateOpen] = useState(false);
+  const [subscriptionGateOpen, setSubscriptionGateOpen] = useState(false);
+
+  const { percentage: profilePercentage, items: profileItems } = getProfileCompletion(user);
 
   useEffect(() => {
     const applyId = searchParams.get('apply');
