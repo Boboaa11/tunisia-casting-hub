@@ -58,7 +58,7 @@ const emptyProfile: ProfileForm = {
 };
 
 const Profile = () => {
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading, refreshUser } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -196,6 +196,7 @@ const Profile = () => {
 
     setProfile((prev) => ({ ...prev, photoUrl }));
     toast({ title: "Photo mise à jour", description: "Votre photo de profil a été mise à jour." });
+    await refreshUser();
   };
 
   const handleSave = async () => {
@@ -246,6 +247,7 @@ const Profile = () => {
 
     toast({ title: "Profil sauvegardé", description: "Vos modifications ont été enregistrées." });
     setIsEditing(false);
+    await refreshUser();
   };
 
   if (authLoading || isLoading) {
