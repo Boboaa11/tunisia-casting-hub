@@ -693,8 +693,9 @@ const SignUp = () => {
                   <Checkbox id="certifyInfo" checked={producerFormData.certifyInfo} onCheckedChange={c => setProducerFormData({...producerFormData, certifyInfo: c as boolean})} className="mt-1" />
                   <Label htmlFor="certifyInfo" className="text-sm text-muted-foreground">Je certifie que les informations fournies sont exactes</Label>
                 </div>
-                <Button type="submit" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
-                  <Send className="h-4 w-4 mr-2" /> Envoyer ma demande
+                <Button type="submit" disabled={isSubmittingProducer} className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
+                  {isSubmittingProducer ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+                  {isSubmittingProducer ? "Envoi en cours..." : "Envoyer ma demande"}
                 </Button>
               </form>
               <div className="mt-6 text-center">
