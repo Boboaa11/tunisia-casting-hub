@@ -66,6 +66,7 @@ const Profile = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const [profile, setProfile] = useState<ProfileForm>(emptyProfile);
   const [stats] = useState({ profileViews: 0, applications: 0 });
 
