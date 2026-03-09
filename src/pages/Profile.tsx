@@ -58,7 +58,7 @@ const emptyProfile: ProfileForm = {
 };
 
 const Profile = () => {
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading, refreshUser } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
