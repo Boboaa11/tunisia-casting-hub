@@ -92,7 +92,7 @@ const Billing = () => {
         "Analytics avancées",
         "Recherche de talents premium",
         "Support dédié",
-        "API access"
+        "Accès API"
       ],
       limitations: [],
       popular: false
