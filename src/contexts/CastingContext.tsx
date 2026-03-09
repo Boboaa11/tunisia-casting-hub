@@ -294,15 +294,22 @@ export const CastingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
     if (error) { console.error('Error adding application:', error); return; }
 
-    // Increment count
-    await supabase.rpc('increment_applications_count' as any, { casting_id_input: application.castingId }).catch(() => {
-      // Fallback: manual increment
-      supabase.from('castings').select('applications_count').eq('id', application.castingId).single().then(({ data }) => {
-        if (data) {
-          supabase.from('castings').update({ applications_count: (data.applications_count || 0) + 1 }).eq('id', application.castingId);
-        }
-      });
-    });
+    // Increment application count
+    try {
+      const { data: castingData } = await supabase
+        .from('castings')
+        .select('applications_count')
+        .eq('id', application.castingId)
+        .single();
+      if (castingData) {
+        await supabase
+          .from('castings')
+          .update({ applications_count: (castingData.applications_count || 0) + 1 })
+          .eq('id', application.castingId);
+      }
+    } catch (e) {
+      console.error('Error incrementing count:', e);
+    }
 
     await fetchApplications();
   };
