@@ -23,7 +23,7 @@ import TalentSearch from "./pages/TalentSearch";
 import Billing from "./pages/Billing";
 import Subscription from "./pages/Subscription";
 import ApplicationManagement from "./pages/ApplicationManagement";
-import TalentOnboarding from "./pages/TalentOnboarding";
+
 
 const queryClient = new QueryClient();
 
@@ -54,7 +54,7 @@ const App = () => (
               <Route path="/billing" element={<Billing />} />
               <Route path="/subscription" element={<Subscription />} />
               <Route path="/applications-management" element={<ApplicationManagement />} />
-              <Route path="/onboarding" element={<TalentOnboarding />} />
+              
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
