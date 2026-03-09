@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Eye, EyeOff, Star, Users, Clapperboard, CheckCircle, Send, Camera, Check } from "lucide-react";
+import { Eye, EyeOff, Star, Users, Clapperboard, CheckCircle, Send, Camera, Check, Loader2 } from "lucide-react";
 import Layout from "@/components/Layout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -182,7 +183,9 @@ const SignUp = () => {
     }
   }, []);
 
-  const handleProducerSubmit = (e: React.FormEvent) => {
+  const [isSubmittingProducer, setIsSubmittingProducer] = useState(false);
+
+  const handleProducerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const fields = ["fullName", "email", "phone", "companyName"];
     let hasError = false;
@@ -204,7 +207,30 @@ const SignUp = () => {
       toast({ title: "Erreur", description: "Veuillez corriger les erreurs du formulaire", variant: "destructive" });
       return;
     }
-    setRequestSubmitted(true);
+
+    setIsSubmittingProducer(true);
+    try {
+      const nameParts = producerFormData.fullName.trim().split(/\s+/);
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.slice(1).join(" ") || "";
+
+      const { error } = await supabase.from("producer_requests").insert({
+        first_name: firstName,
+        last_name: lastName,
+        email: producerFormData.email,
+        phone: producerFormData.phone,
+        company_name: producerFormData.companyName,
+        production_type: producerFormData.productionType,
+        description: producerFormData.description || null,
+      });
+
+      if (error) throw error;
+      setRequestSubmitted(true);
+    } catch (err: any) {
+      toast({ title: "Erreur", description: "Impossible d'envoyer la demande. Veuillez réessayer.", variant: "destructive" });
+    } finally {
+      setIsSubmittingProducer(false);
+    }
   };
 
   const handleProducerChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -667,8 +693,9 @@ const SignUp = () => {
                   <Checkbox id="certifyInfo" checked={producerFormData.certifyInfo} onCheckedChange={c => setProducerFormData({...producerFormData, certifyInfo: c as boolean})} className="mt-1" />
                   <Label htmlFor="certifyInfo" className="text-sm text-muted-foreground">Je certifie que les informations fournies sont exactes</Label>
                 </div>
-                <Button type="submit" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
-                  <Send className="h-4 w-4 mr-2" /> Envoyer ma demande
+                <Button type="submit" disabled={isSubmittingProducer} className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
+                  {isSubmittingProducer ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+                  {isSubmittingProducer ? "Envoi en cours..." : "Envoyer ma demande"}
                 </Button>
               </form>
               <div className="mt-6 text-center">
