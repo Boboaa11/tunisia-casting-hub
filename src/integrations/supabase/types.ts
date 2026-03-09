@@ -226,6 +226,144 @@ export type Database = {
         }
         Relationships: []
       }
+      producer_requests: {
+        Row: {
+          company_name: string | null
+          created_at: string
+          description: string | null
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+          phone: string | null
+          production_type: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          company_name?: string | null
+          created_at?: string
+          description?: string | null
+          email: string
+          first_name: string
+          id?: string
+          last_name: string
+          phone?: string | null
+          production_type?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          company_name?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          phone?: string | null
+          production_type?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          created_at: string
+          end_date: string
+          id: string
+          plan_type: string
+          start_date: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          id?: string
+          plan_type: string
+          start_date?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          id?: string
+          plan_type?: string
+          start_date?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      talent_profiles: {
+        Row: {
+          bio: string | null
+          book_url: string | null
+          city: string | null
+          created_at: string
+          eye_color: string | null
+          first_name: string | null
+          hair_color: string | null
+          height: string | null
+          id: string
+          languages: string[] | null
+          last_name: string | null
+          photo_url: string | null
+          profile_completion_percentage: number | null
+          skills: string[] | null
+          talent_type: string | null
+          updated_at: string
+          user_id: string
+          weight: string | null
+        }
+        Insert: {
+          bio?: string | null
+          book_url?: string | null
+          city?: string | null
+          created_at?: string
+          eye_color?: string | null
+          first_name?: string | null
+          hair_color?: string | null
+          height?: string | null
+          id?: string
+          languages?: string[] | null
+          last_name?: string | null
+          photo_url?: string | null
+          profile_completion_percentage?: number | null
+          skills?: string[] | null
+          talent_type?: string | null
+          updated_at?: string
+          user_id: string
+          weight?: string | null
+        }
+        Update: {
+          bio?: string | null
+          book_url?: string | null
+          city?: string | null
+          created_at?: string
+          eye_color?: string | null
+          first_name?: string | null
+          hair_color?: string | null
+          height?: string | null
+          id?: string
+          languages?: string[] | null
+          last_name?: string | null
+          photo_url?: string | null
+          profile_completion_percentage?: number | null
+          skills?: string[] | null
+          talent_type?: string | null
+          updated_at?: string
+          user_id?: string
+          weight?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
