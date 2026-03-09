@@ -64,7 +64,7 @@ const Subscription = () => {
                 <Button
                   variant="destructive"
                   size="sm"
-                  onClick={() => navigate("/subscription/plans")}
+                  onClick={() => handleComingSoon("Renouveler l'abonnement")}
                   className="shrink-0"
                 >
                   Renouveler <ArrowRight className="h-4 w-4 ml-1" />
