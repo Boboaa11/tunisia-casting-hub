@@ -1,16 +1,17 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Eye, EyeOff, Star, Users, Clapperboard, ArrowLeft, Sparkles } from "lucide-react";
+import { Eye, EyeOff, Star, Users, Clapperboard, ArrowLeft, Sparkles, CheckCircle, Send } from "lucide-react";
 import Layout from "@/components/Layout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { useFormValidation, validateEmail, validatePassword, validateConfirmPassword, validateRequired, validatePhone, validateAge } from "@/hooks/useFormValidation";
+import { useFormValidation, validateEmail, validatePassword, validateConfirmPassword, validateRequired, validatePhone } from "@/hooks/useFormValidation";
 import FormFieldError from "@/components/FormFieldError";
 import PasswordStrengthBar from "@/components/PasswordStrengthBar";
 
