@@ -235,10 +235,10 @@ const SignUp = () => {
                        <Clapperboard className="h-10 w-10 text-accent-foreground" />
                      </div>
                    </div>
-                   <h2 className="text-2xl font-bold text-foreground mb-2">Je suis un Producteur</h2>
-                   <p className="text-muted-foreground mb-4">
-                     Agence, studio, réalisateur... Trouvez les talents parfaits
-                   </p>
+                    <h2 className="text-2xl font-bold text-foreground mb-2">Je suis Directeur de Casting</h2>
+                    <p className="text-muted-foreground mb-4">
+                      Agence, studio, réalisateur... Demandez un accès pour publier vos castings
+                    </p>
                    <ul className="text-sm text-muted-foreground space-y-2 text-left">
                      <li className="flex items-center gap-2">
                        <span className="text-primary">✓</span> Publiez vos castings
