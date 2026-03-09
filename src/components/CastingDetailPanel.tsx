@@ -104,14 +104,14 @@ const CastingDetailPanel = ({ castingId, onClose }: CastingDetailPanelProps) => 
     <>
       {/* Overlay */}
       <div
-        className="fixed inset-0 z-40 bg-black/40 transition-opacity duration-300"
+        className="fixed inset-0 z-[60] bg-black/40 transition-opacity duration-300"
         style={{ opacity: isVisible ? 1 : 0 }}
         onClick={handleClose}
       />
 
       {/* Panel */}
       <div
-        className="fixed inset-y-0 right-0 z-50 w-full sm:w-[540px] md:w-[600px] lg:w-[660px] bg-background border-l border-border shadow-elegant transition-transform duration-350 ease-out"
+        className="fixed inset-y-0 right-0 z-[61] w-full sm:w-[540px] md:w-[600px] lg:w-[660px] bg-background border-l border-border shadow-elegant transition-transform duration-350 ease-out"
         style={{
           transform: isVisible ? "translateX(0)" : "translateX(100%)",
           transitionDuration: "350ms",
