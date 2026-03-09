@@ -506,8 +506,8 @@ const SignUp = () => {
              <Card className="shadow-elegant bg-card text-center">
                <CardContent className="p-12 space-y-6">
                  <div className="flex justify-center">
-                   <div className="p-4 bg-green-100 rounded-full">
-                     <CheckCircle className="h-12 w-12 text-green-600" />
+                   <div className="p-4 bg-primary/10 rounded-full">
+                     <CheckCircle className="h-12 w-12 text-primary" />
                    </div>
                  </div>
                  <h1 className="text-3xl font-bold text-foreground">Demande envoyée ✓</h1>
