@@ -71,7 +71,7 @@ const ProfileViewMode = ({ profile, stats, onEdit }: ProfileViewModeProps) => {
         <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent h-32" />
         <CardContent className="relative pt-0">
           <div className="flex flex-col md:flex-row gap-6 -mt-16">
-            <Avatar className="w-32 h-32 border-4 border-background shadow-elegant">
+            <Avatar className="w-32 h-32 border-4 border-background shadow-elegant [&>img]:object-cover">
               <AvatarImage src={profile.photoUrl || undefined} />
               <AvatarFallback className="text-3xl bg-primary text-primary-foreground">
                 {profile.firstName.charAt(0)}{profile.lastName.charAt(0)}

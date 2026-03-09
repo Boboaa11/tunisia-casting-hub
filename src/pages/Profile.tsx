@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import ProfileViewMode from "@/components/ProfileViewMode";
+import AvatarCropDialog from "@/components/AvatarCropDialog";
 
 interface ProfileForm {
   firstName: string;
@@ -65,6 +66,7 @@ const Profile = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const [profile, setProfile] = useState<ProfileForm>(emptyProfile);
   const [stats] = useState({ profileViews: 0, applications: 0 });
 
@@ -137,29 +139,36 @@ const Profile = () => {
     setProfile((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !user) return;
+    if (!file) return;
 
     if (!file.type.startsWith("image/")) {
       toast({ title: "Erreur", description: "Veuillez sélectionner une image.", variant: "destructive" });
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast({ title: "Erreur", description: "L'image ne doit pas dépasser 5 Mo.", variant: "destructive" });
+    if (file.size > 10 * 1024 * 1024) {
+      toast({ title: "Erreur", description: "L'image ne doit pas dépasser 10 Mo.", variant: "destructive" });
       return;
     }
 
+    const reader = new FileReader();
+    reader.onload = () => setCropImageSrc(reader.result as string);
+    reader.readAsDataURL(file);
+    // Reset input so the same file can be re-selected
+    e.target.value = "";
+  };
+
+  const handleCroppedUpload = async (blob: Blob) => {
+    if (!user) return;
     setIsUploading(true);
 
-    const fileExt = file.name.split(".").pop();
-    const filePath = `${user.id}/avatar.${fileExt}`;
+    const filePath = `${user.id}/avatar.jpg`;
 
-    // Upload to storage
     const { error: uploadError } = await supabase.storage
       .from("avatars")
-      .upload(filePath, file, { upsert: true });
+      .upload(filePath, blob, { upsert: true, contentType: "image/jpeg" });
 
     if (uploadError) {
       console.error("Upload error:", uploadError);
@@ -168,17 +177,16 @@ const Profile = () => {
       return;
     }
 
-    // Get public URL
     const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(filePath);
     const photoUrl = `${urlData.publicUrl}?t=${Date.now()}`;
 
-    // Update talent_profiles
     const { error: updateError } = await supabase
       .from("talent_profiles")
       .update({ photo_url: photoUrl })
       .eq("user_id", user.id);
 
     setIsUploading(false);
+    setCropImageSrc(null);
 
     if (updateError) {
       console.error("Update error:", updateError);
@@ -281,14 +289,24 @@ const Profile = () => {
           type="file"
           accept="image/*"
           className="hidden"
-          onChange={handlePhotoUpload}
+          onChange={handlePhotoSelect}
         />
+
+        {cropImageSrc && (
+          <AvatarCropDialog
+            open={!!cropImageSrc}
+            imageSrc={cropImageSrc}
+            onClose={() => setCropImageSrc(null)}
+            onCropComplete={handleCroppedUpload}
+            isSaving={isUploading}
+          />
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Card className="lg:col-span-1">
             <CardHeader className="text-center">
               <div className="relative mx-auto w-32 h-32">
-                <Avatar className="w-32 h-32">
+                <Avatar className="w-32 h-32 [&>img]:object-cover">
                   <AvatarImage src={profile.photoUrl || undefined} />
                   <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
                     {profile.firstName.charAt(0)}{profile.lastName.charAt(0)}
