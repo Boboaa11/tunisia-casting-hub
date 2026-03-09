@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,7 @@ interface ProfileForm {
   languages: string;
   skills: string;
   bookUrl: string;
+  photoUrl: string;
 }
 
 const emptyProfile: ProfileForm = {
@@ -52,26 +53,27 @@ const emptyProfile: ProfileForm = {
   languages: "",
   skills: "",
   bookUrl: "",
+  photoUrl: "",
 };
 
 const Profile = () => {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [profile, setProfile] = useState<ProfileForm>(emptyProfile);
   const [stats] = useState({ profileViews: 0, applications: 0 });
 
-  // Redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       navigate("/login");
     }
   }, [authLoading, isAuthenticated, navigate]);
 
-  // Load profile from DB
   useEffect(() => {
     if (!user) return;
 
@@ -107,6 +109,7 @@ const Profile = () => {
           languages: (data.languages || []).join(", "),
           skills: (data.skills || []).join(", "),
           bookUrl: data.book_url || "",
+          photoUrl: data.photo_url || "",
         });
       } else {
         setProfile({ ...emptyProfile, email: user.email || "" });
@@ -117,7 +120,6 @@ const Profile = () => {
     loadProfile();
   }, [user]);
 
-  // Load application count
   useEffect(() => {
     if (!user) return;
     supabase
@@ -135,6 +137,59 @@ const Profile = () => {
     setProfile((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Erreur", description: "Veuillez sélectionner une image.", variant: "destructive" });
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "Erreur", description: "L'image ne doit pas dépasser 5 Mo.", variant: "destructive" });
+      return;
+    }
+
+    setIsUploading(true);
+
+    const fileExt = file.name.split(".").pop();
+    const filePath = `${user.id}/avatar.${fileExt}`;
+
+    // Upload to storage
+    const { error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(filePath, file, { upsert: true });
+
+    if (uploadError) {
+      console.error("Upload error:", uploadError);
+      toast({ title: "Erreur", description: "Impossible de télécharger la photo.", variant: "destructive" });
+      setIsUploading(false);
+      return;
+    }
+
+    // Get public URL
+    const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(filePath);
+    const photoUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+
+    // Update talent_profiles
+    const { error: updateError } = await supabase
+      .from("talent_profiles")
+      .update({ photo_url: photoUrl })
+      .eq("user_id", user.id);
+
+    setIsUploading(false);
+
+    if (updateError) {
+      console.error("Update error:", updateError);
+      toast({ title: "Erreur", description: "Impossible de mettre à jour le profil.", variant: "destructive" });
+      return;
+    }
+
+    setProfile((prev) => ({ ...prev, photoUrl }));
+    toast({ title: "Photo mise à jour", description: "Votre photo de profil a été mise à jour." });
+  };
+
   const handleSave = async () => {
     if (!user) return;
     setIsSaving(true);
@@ -143,6 +198,7 @@ const Profile = () => {
     const skillsArr = profile.skills.split(",").map((s) => s.trim()).filter(Boolean);
 
     const completionItems = [
+      !!profile.photoUrl,
       !!profile.talentType,
       !!profile.city,
       !!profile.bio,
@@ -220,18 +276,31 @@ const Profile = () => {
           <p className="text-muted-foreground">Gérez vos informations personnelles et professionnelles</p>
         </div>
 
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handlePhotoUpload}
+        />
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Card className="lg:col-span-1">
             <CardHeader className="text-center">
               <div className="relative mx-auto w-32 h-32">
                 <Avatar className="w-32 h-32">
-                  <AvatarImage src="/placeholder.svg" />
-                  <AvatarFallback className="text-2xl">
+                  <AvatarImage src={profile.photoUrl || undefined} />
+                  <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
                     {profile.firstName.charAt(0)}{profile.lastName.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
-                <Button size="sm" className="absolute bottom-0 right-0 rounded-full w-10 h-10 p-0">
-                  <Camera className="h-4 w-4" />
+                <Button
+                  size="sm"
+                  className="absolute bottom-0 right-0 rounded-full w-10 h-10 p-0"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                >
+                  {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
                 </Button>
               </div>
               <CardTitle className="text-xl">{profile.firstName} {profile.lastName}</CardTitle>
@@ -243,12 +312,10 @@ const Profile = () => {
             <CardContent>
               <div className="space-y-4">
                 {profile.bookUrl ? (
-                  <div className="space-y-2">
-                    <Button className="w-full" variant="outline" onClick={() => window.open(profile.bookUrl, '_blank')}>
-                      <BookOpen className="h-4 w-4 mr-2" />
-                      Voir le Book
-                    </Button>
-                  </div>
+                  <Button className="w-full" variant="outline" onClick={() => window.open(profile.bookUrl, '_blank')}>
+                    <BookOpen className="h-4 w-4 mr-2" />
+                    Voir le Book
+                  </Button>
                 ) : null}
               </div>
             </CardContent>

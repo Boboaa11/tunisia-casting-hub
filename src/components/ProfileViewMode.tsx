@@ -33,6 +33,7 @@ interface ProfileData {
   languages: string;
   skills: string;
   bookUrl?: string;
+  photoUrl?: string;
 }
 
 interface ProfileStats {
