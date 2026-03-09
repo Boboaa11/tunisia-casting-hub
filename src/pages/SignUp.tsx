@@ -497,7 +497,40 @@ const SignUp = () => {
       );
    }
  
-   // Producer Registration Form
+   // Casting Director Request Form
+   if (requestSubmitted) {
+     return (
+       <Layout>
+         <div className="min-h-screen bg-gradient-card flex items-center justify-center py-12 px-4">
+           <div className="max-w-lg w-full animate-fade-in">
+             <Card className="shadow-elegant bg-card text-center">
+               <CardContent className="p-12 space-y-6">
+                 <div className="flex justify-center">
+                   <div className="p-4 bg-green-100 rounded-full">
+                     <CheckCircle className="h-12 w-12 text-green-600" />
+                   </div>
+                 </div>
+                 <h1 className="text-3xl font-bold text-foreground">Demande envoyée ✓</h1>
+                 <p className="text-muted-foreground text-lg leading-relaxed">
+                   Merci pour votre demande ! Notre équipe va examiner vos informations et vous contacter dans un délai de <strong>48 heures</strong> par email ou téléphone.
+                 </p>
+                 <p className="text-sm text-muted-foreground">
+                   Si vous avez des questions, n'hésitez pas à nous contacter via notre{" "}
+                   <Link to="/contact" className="text-primary hover:text-primary-glow font-medium">
+                     page de contact
+                   </Link>.
+                 </p>
+                 <Button variant="outline" asChild className="mt-4">
+                   <Link to="/">Retour à l'accueil</Link>
+                 </Button>
+               </CardContent>
+             </Card>
+           </div>
+         </div>
+       </Layout>
+     );
+   }
+
   return (
     <Layout>
       <div className="min-h-screen bg-gradient-card flex items-center justify-center py-12 px-4">
@@ -516,49 +549,33 @@ const SignUp = () => {
                  <Clapperboard className="h-8 w-8 text-accent-foreground" />
               </div>
             </div>
-             <h1 className="text-3xl font-bold text-foreground">Inscription Producteur</h1>
+             <h1 className="text-3xl font-bold text-foreground">Demande d'accès Directeur de Casting</h1>
             <p className="text-muted-foreground mt-2">
-               Créez votre compte et trouvez les meilleurs talents
+               Remplissez le formulaire ci-dessous. Notre équipe examinera votre demande.
             </p>
           </div>
 
           <Card className="shadow-elegant bg-card">
             <CardHeader>
-               <CardTitle className="text-2xl text-center text-foreground">Informations de l'entreprise</CardTitle>
+               <CardTitle className="text-2xl text-center text-foreground">Informations professionnelles</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                  <div className="space-y-2">
-                    <Label htmlFor="companyName" className="text-foreground">Nom de l'entreprise / Agence *</Label>
+                    <Label htmlFor="fullName" className="text-foreground">Prénom et Nom *</Label>
                     <Input
-                      id="companyName"
-                      name="companyName"
+                      id="fullName"
+                      name="fullName"
                       type="text"
                       required
-                      value={producerFormData.companyName}
+                      value={producerFormData.fullName}
                       onChange={handleProducerChange}
                       onBlur={handleProducerBlur}
-                      placeholder="Nom de votre entreprise"
-                      className={`shadow-card ${producerValidation.getError("companyName") ? "border-destructive" : ""}`}
+                      placeholder="Votre prénom et nom"
+                      className={`shadow-card ${producerValidation.getError("fullName") ? "border-destructive" : ""}`}
                     />
-                    <FormFieldError error={producerValidation.getError("companyName")} />
+                    <FormFieldError error={producerValidation.getError("fullName")} />
                   </div>
- 
-                  <div className="space-y-2">
-                    <Label htmlFor="contactName" className="text-foreground">Nom du contact *</Label>
-                    <Input
-                      id="contactName"
-                      name="contactName"
-                      type="text"
-                      required
-                      value={producerFormData.contactName}
-                      onChange={handleProducerChange}
-                      onBlur={handleProducerBlur}
-                      placeholder="Votre nom complet"
-                      className={`shadow-card ${producerValidation.getError("contactName") ? "border-destructive" : ""}`}
-                    />
-                    <FormFieldError error={producerValidation.getError("contactName")} />
-                 </div>
 
                  <div className="space-y-2">
                     <Label htmlFor="email" className="text-foreground">Email professionnel *</Label>
@@ -576,150 +593,85 @@ const SignUp = () => {
                    <FormFieldError error={producerValidation.getError("email")} />
                  </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="phone" className="text-foreground">Téléphone</Label>
-                      <Input
-                        id="phone"
-                        name="phone"
-                        type="tel"
-                        value={producerFormData.phone}
-                        onChange={handleProducerChange}
-                        onBlur={handleProducerBlur}
-                        placeholder="+216 XX XXX XXX"
-                        className={`shadow-card ${producerValidation.getError("phone") ? "border-destructive" : ""}`}
-                      />
-                      <FormFieldError error={producerValidation.getError("phone")} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="productionType" className="text-foreground">Type de production</Label>
-                      <Select onValueChange={(value) => setProducerFormData({...producerFormData, productionType: value})}>
-                        <SelectTrigger className="shadow-card">
-                          <SelectValue placeholder="Sélectionnez" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="film">Cinéma</SelectItem>
-                          <SelectItem value="tv">Télévision</SelectItem>
-                          <SelectItem value="advertising">Publicité</SelectItem>
-                          <SelectItem value="theater">Théâtre</SelectItem>
-                          <SelectItem value="music">Musique</SelectItem>
-                          <SelectItem value="agency">Agence de casting</SelectItem>
-                          <SelectItem value="other">Autre</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                 <div className="space-y-2">
+                   <Label htmlFor="phone" className="text-foreground">Numéro de téléphone *</Label>
+                   <Input
+                     id="phone"
+                     name="phone"
+                     type="tel"
+                     required
+                     value={producerFormData.phone}
+                     onChange={handleProducerChange}
+                     onBlur={handleProducerBlur}
+                     placeholder="+216 XX XXX XXX"
+                     className={`shadow-card ${producerValidation.getError("phone") ? "border-destructive" : ""}`}
+                   />
+                   <FormFieldError error={producerValidation.getError("phone")} />
                  </div>
 
                  <div className="space-y-2">
-                    <Label htmlFor="website" className="text-foreground">Site web (optionnel)</Label>
+                    <Label htmlFor="companyName" className="text-foreground">Nom de la société ou production *</Label>
                     <Input
-                      id="website"
-                      name="website"
-                      type="url"
-                      value={producerFormData.website}
-                      onChange={handleProducerChange}
-                      placeholder="https://www.entreprise.com"
-                      className="shadow-card"
-                    />
-                 </div>
-
-                 <div className="space-y-2">
-                    <Label htmlFor="password" className="text-foreground">Mot de passe *</Label>
-                   <div className="relative">
-                     <Input
-                       id="password"
-                       name="password"
-                       type={showPassword ? "text" : "password"}
-                       required
-                        value={producerFormData.password}
-                        onChange={handleProducerChange}
-                        onBlur={handleProducerBlur}
-                        placeholder="Créez un mot de passe"
-                       className={`shadow-card pr-10 ${producerValidation.getError("password") ? "border-destructive" : ""}`}
-                     />
-                     <button
-                       type="button"
-                       className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                       onClick={() => setShowPassword(!showPassword)}
-                     >
-                       {showPassword ? (
-                         <EyeOff className="h-4 w-4 text-muted-foreground" />
-                       ) : (
-                         <Eye className="h-4 w-4 text-muted-foreground" />
-                       )}
-                     </button>
-                   </div>
-                   <PasswordStrengthBar password={producerFormData.password} />
-                   <FormFieldError error={producerValidation.getError("password")} />
-                 </div>
-
-                 <div className="space-y-2">
-                    <Label htmlFor="confirmPassword" className="text-foreground">Confirmer le mot de passe *</Label>
-                   <div className="relative">
-                     <Input
-                       id="confirmPassword"
-                       name="confirmPassword"
-                       type={showConfirmPassword ? "text" : "password"}
-                       required
-                        value={producerFormData.confirmPassword}
-                        onChange={handleProducerChange}
-                        onBlur={handleProducerBlur}
-                        placeholder="Confirmez votre mot de passe"
-                       className={`shadow-card pr-10 ${producerValidation.getError("confirmPassword") ? "border-destructive" : ""}`}
-                     />
-                     <button
-                       type="button"
-                       className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                     >
-                       {showConfirmPassword ? (
-                         <EyeOff className="h-4 w-4 text-muted-foreground" />
-                       ) : (
-                         <Eye className="h-4 w-4 text-muted-foreground" />
-                       )}
-                     </button>
-                   </div>
-                   <FormFieldError error={producerValidation.getError("confirmPassword")} />
-                 </div>
-
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="agreeToTerms"
-                       checked={producerFormData.agreeToTerms}
-                      onCheckedChange={(checked) => 
-                         setProducerFormData({...producerFormData, agreeToTerms: checked as boolean})
-                      }
+                      id="companyName"
+                      name="companyName"
+                      type="text"
                       required
+                      value={producerFormData.companyName}
+                      onChange={handleProducerChange}
+                      onBlur={handleProducerBlur}
+                      placeholder="Nom de votre société"
+                      className={`shadow-card ${producerValidation.getError("companyName") ? "border-destructive" : ""}`}
                     />
-                    <Label htmlFor="agreeToTerms" className="text-sm text-muted-foreground">
-                       J'accepte les{" "}
-                      <Link to="/terms" className="text-primary hover:text-primary-glow">
-                         Conditions d'utilisation
-                      </Link>{" "}
-                       et la{" "}
-                      <Link to="/privacy" className="text-primary hover:text-primary-glow">
-                         Politique de confidentialité
-                      </Link>
-                    </Label>
+                    <FormFieldError error={producerValidation.getError("companyName")} />
                   </div>
 
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="agreeToMarketing"
-                       checked={producerFormData.agreeToMarketing}
-                      onCheckedChange={(checked) => 
-                         setProducerFormData({...producerFormData, agreeToMarketing: checked as boolean})
-                      }
+                 <div className="space-y-2">
+                   <Label htmlFor="productionType" className="text-foreground">Type de production *</Label>
+                   <Select onValueChange={(value) => setProducerFormData({...producerFormData, productionType: value})}>
+                     <SelectTrigger className="shadow-card">
+                       <SelectValue placeholder="Sélectionnez un type" />
+                     </SelectTrigger>
+                     <SelectContent>
+                       <SelectItem value="agence_pub">Agence publicitaire</SelectItem>
+                       <SelectItem value="maison_prod">Maison de production</SelectItem>
+                       <SelectItem value="chaine_tv">Chaîne TV</SelectItem>
+                       <SelectItem value="theatre">Théâtre</SelectItem>
+                       <SelectItem value="projet_independant">Projet indépendant</SelectItem>
+                       <SelectItem value="autre">Autre</SelectItem>
+                     </SelectContent>
+                   </Select>
+                 </div>
+
+                 <div className="space-y-2">
+                    <Label htmlFor="description" className="text-foreground">Description du projet ou de l'activité</Label>
+                    <Textarea
+                      id="description"
+                      name="description"
+                      value={producerFormData.description}
+                      onChange={handleProducerChange}
+                      placeholder="Décrivez brièvement votre activité ou votre projet (optionnel)"
+                      className="shadow-card min-h-[100px]"
                     />
-                    <Label htmlFor="agreeToMarketing" className="text-sm text-muted-foreground">
-                       Je souhaite recevoir des mises à jour sur les nouveaux talents
-                    </Label>
-                  </div>
+                 </div>
+
+                <div className="flex items-start space-x-2">
+                  <Checkbox
+                    id="certifyInfo"
+                    checked={producerFormData.certifyInfo}
+                    onCheckedChange={(checked) => 
+                       setProducerFormData({...producerFormData, certifyInfo: checked as boolean})
+                    }
+                    required
+                    className="mt-1"
+                  />
+                  <Label htmlFor="certifyInfo" className="text-sm text-muted-foreground">
+                     Je certifie que les informations fournies sont exactes
+                  </Label>
                 </div>
 
                  <Button type="submit" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
-                   Créer mon compte Producteur
+                   <Send className="h-4 w-4 mr-2" />
+                   Envoyer ma demande
                 </Button>
               </form>
 
