@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Eye, EyeOff, Star, Users, Clapperboard, CheckCircle, Send, Camera, Check } from "lucide-react";
+import Layout from "@/components/Layout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useFormValidation, validateEmail, validatePassword, validateConfirmPassword, validateRequired, validatePhone } from "@/hooks/useFormValidation";
