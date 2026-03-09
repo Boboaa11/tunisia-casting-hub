@@ -76,10 +76,22 @@ const Castings = () => {
       return;
     }
     if (user?.role !== 'talent') return;
-    if (!user?.hasSubscription) {
-      navigate(`/subscription?message=subscription_required&castingId=${casting.id}`);
+
+    // Gate 1: Profile completion
+    if (profilePercentage < 90) {
+      setProfileGateOpen(true);
       return;
     }
+
+    // Gate 2: Subscription
+    if (!user?.hasSubscription) {
+      setSelectedCasting(casting);
+      setSelectedRole(role);
+      setSubscriptionGateOpen(true);
+      return;
+    }
+
+    // Gate 3: Open application
     setSelectedCasting(casting);
     setSelectedRole(role);
     setApplicationDialogOpen(true);
