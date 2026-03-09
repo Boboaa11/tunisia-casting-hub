@@ -70,27 +70,27 @@ const Index = () => {
             </Button>
           </div>
 
-          {/* Demo Quick Access */}
+          {/* CTA Links */}
           <div className="mt-8 pt-6 border-t border-white/20">
-            <p className="text-sm text-white/60 mb-3">Explorer la plateforme en mode démo</p>
+            <p className="text-sm text-white/60 mb-3">Prêt à commencer ?</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
               <Button
                 variant="outline"
                 size="sm"
                 className="border-white/30 text-white bg-white/5 hover:bg-white/20 gap-2"
-                onClick={() => handleExploreAs('demo-talent-sub')}
+                onClick={() => navigate('/signup')}
               >
                 <Star className="h-4 w-4" />
-                Explorer en Talent
+                Créer un compte
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 className="border-white/30 text-white bg-white/5 hover:bg-white/20 gap-2"
-                onClick={() => handleExploreAs('demo-producer')}
+                onClick={() => navigate('/login')}
               >
                 <Film className="h-4 w-4" />
-                Explorer en Producteur
+                Se connecter
               </Button>
             </div>
           </div>
