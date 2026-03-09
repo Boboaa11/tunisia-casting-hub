@@ -183,7 +183,9 @@ const SignUp = () => {
     }
   }, []);
 
-  const handleProducerSubmit = (e: React.FormEvent) => {
+  const [isSubmittingProducer, setIsSubmittingProducer] = useState(false);
+
+  const handleProducerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const fields = ["fullName", "email", "phone", "companyName"];
     let hasError = false;
@@ -205,7 +207,30 @@ const SignUp = () => {
       toast({ title: "Erreur", description: "Veuillez corriger les erreurs du formulaire", variant: "destructive" });
       return;
     }
-    setRequestSubmitted(true);
+
+    setIsSubmittingProducer(true);
+    try {
+      const nameParts = producerFormData.fullName.trim().split(/\s+/);
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.slice(1).join(" ") || "";
+
+      const { error } = await supabase.from("producer_requests").insert({
+        first_name: firstName,
+        last_name: lastName,
+        email: producerFormData.email,
+        phone: producerFormData.phone,
+        company_name: producerFormData.companyName,
+        production_type: producerFormData.productionType,
+        description: producerFormData.description || null,
+      });
+
+      if (error) throw error;
+      setRequestSubmitted(true);
+    } catch (err: any) {
+      toast({ title: "Erreur", description: "Impossible d'envoyer la demande. Veuillez réessayer.", variant: "destructive" });
+    } finally {
+      setIsSubmittingProducer(false);
+    }
   };
 
   const handleProducerChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
