@@ -226,7 +226,7 @@ const Castings = () => {
                         </span>
                         <span className="text-xs text-muted-foreground">
                           <Users className="h-3 w-3 inline mr-1" />
-                          {casting.roles?.length || 0} roles
+                          {casting.roles?.length || 0} rôles
                         </span>
                       </div>
 
