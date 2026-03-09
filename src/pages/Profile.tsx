@@ -49,11 +49,33 @@ const Profile = () => {
     console.log("Saving profile:", profile);
   };
 
+  if (!isEditing) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-8">
+          <ProfileViewMode 
+            profile={profile} 
+            stats={stats} 
+            onEdit={() => setIsEditing(true)} 
+          />
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Mon Profil</h1>
+          <Button 
+            variant="ghost" 
+            onClick={() => setIsEditing(false)}
+            className="mb-4"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Retour au profil
+          </Button>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Modifier mon profil</h1>
           <p className="text-muted-foreground">Gérez vos informations personnelles et professionnelles</p>
         </div>
 
