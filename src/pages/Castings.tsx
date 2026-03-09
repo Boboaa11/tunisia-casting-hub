@@ -327,6 +327,18 @@ const Castings = () => {
         onOpenChange={setApplicationDialogOpen}
       />
 
+      <ProfileGateModal
+        open={profileGateOpen}
+        onOpenChange={setProfileGateOpen}
+        percentage={profilePercentage}
+        items={profileItems}
+      />
+
+      <SubscriptionGateModal
+        open={subscriptionGateOpen}
+        onOpenChange={setSubscriptionGateOpen}
+      />
+
       <CastingDetailPanel
         castingId={castingIdParam ? parseInt(castingIdParam) : null}
         onClose={() => navigate('/castings')}
