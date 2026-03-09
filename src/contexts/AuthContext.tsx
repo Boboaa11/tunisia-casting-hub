@@ -59,6 +59,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   setSubscription: (hasSubscription: boolean) => void;
   completeOnboarding: () => void;
+  refreshUser: () => Promise<void>;
   redirectAfterAuth: string | null;
   setRedirectAfterAuth: (path: string | null) => void;
 }
