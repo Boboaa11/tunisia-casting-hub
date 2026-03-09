@@ -107,18 +107,8 @@ const Castings = () => {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-card py-8">
+      <div className="min-h-screen bg-[hsl(40_10%_96%)] py-8">
         <div className="max-w-[900px] mx-auto px-4">
-          {/* Header */}
-          <div className="text-center mb-12 animate-fade-in">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
-              Appels de Casting en Cours
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Découvrez des opportunités passionnantes dans l'industrie du divertissement tunisien
-            </p>
-          </div>
-
           {/* Search and Filters */}
           <div className="mb-8 animate-slide-up">
             <div className="flex flex-col md:flex-row gap-4 mb-6">
