@@ -289,14 +289,24 @@ const Profile = () => {
           type="file"
           accept="image/*"
           className="hidden"
-          onChange={handlePhotoUpload}
+          onChange={handlePhotoSelect}
         />
+
+        {cropImageSrc && (
+          <AvatarCropDialog
+            open={!!cropImageSrc}
+            imageSrc={cropImageSrc}
+            onClose={() => setCropImageSrc(null)}
+            onCropComplete={handleCroppedUpload}
+            isSaving={isUploading}
+          />
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Card className="lg:col-span-1">
             <CardHeader className="text-center">
               <div className="relative mx-auto w-32 h-32">
-                <Avatar className="w-32 h-32">
+                <Avatar className="w-32 h-32 [&>img]:object-cover">
                   <AvatarImage src={profile.photoUrl || undefined} />
                   <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
                     {profile.firstName.charAt(0)}{profile.lastName.charAt(0)}
