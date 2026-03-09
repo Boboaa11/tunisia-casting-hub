@@ -15,6 +15,11 @@ import { useToast } from "@/hooks/use-toast";
 const Subscription = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { toast } = useToast();
+
+  const handleComingSoon = (action: string) => {
+    toast({ title: "Bientôt disponible", description: `La fonctionnalité "${action}" sera disponible prochainement.` });
+  };
 
   // Mock subscription data based on user state
   const isActive = user?.hasSubscription ?? false;
