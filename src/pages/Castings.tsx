@@ -107,18 +107,8 @@ const Castings = () => {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-card py-8">
+      <div className="min-h-screen bg-[hsl(40_10%_96%)] py-8">
         <div className="max-w-[900px] mx-auto px-4">
-          {/* Header */}
-          <div className="text-center mb-12 animate-fade-in">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
-              Appels de Casting en Cours
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Découvrez des opportunités passionnantes dans l'industrie du divertissement tunisien
-            </p>
-          </div>
-
           {/* Search and Filters */}
           <div className="mb-8 animate-slide-up">
             <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -160,7 +150,7 @@ const Castings = () => {
               return (
                 <Card
                   key={casting.id}
-                  className="shadow-card hover:shadow-elegant transition-all duration-300 bg-card animate-slide-up overflow-hidden border-border/60"
+                  className="bg-white shadow-[0_2px_8px_-2px_hsl(340_15%_12%/0.08)] hover:shadow-[0_4px_16px_-4px_hsl(340_15%_12%/0.12)] transition-all duration-300 animate-slide-up overflow-hidden border border-[hsl(30_8%_92%)]"
                   style={{ animationDelay: `${index * 0.08}s` }}
                 >
                   {/* Card Header — Project Name */}
