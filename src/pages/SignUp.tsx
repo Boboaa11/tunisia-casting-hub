@@ -119,8 +119,11 @@ const SignUp = () => {
     }, 300);
   }, [isTransitioning]);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [signupSuccess, setSignupSuccess] = useState(false);
+
   // Step 1 submit
-  const handleStep1Submit = (e: React.FormEvent) => {
+  const handleStep1Submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const emailErr = validateEmail(email);
     const passErr = validatePassword(password);
@@ -135,9 +138,15 @@ const SignUp = () => {
       toast({ title: "Erreur", description: "Veuillez corriger les erreurs", variant: "destructive" });
       return;
     }
-    // Create the account
-    signup(email, password, "", 'talent');
-    transitionTo(2);
+    setIsSubmitting(true);
+    const result = await signup(email, password, firstName, lastName);
+    setIsSubmitting(false);
+    if (result.error) {
+      toast({ title: "Erreur d'inscription", description: result.error, variant: "destructive" });
+      return;
+    }
+    setSignupSuccess(true);
+    toast({ title: "Inscription réussie !", description: "Vérifiez votre email pour confirmer votre compte." });
   };
 
   // Step 2 continue
