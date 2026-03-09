@@ -335,13 +335,23 @@ const SignUp = () => {
             <div className={`transition-all duration-300 ease-in-out ${fadeState === "out" ? "opacity-0 translate-y-3" : "opacity-100 translate-y-0"}`}>
 
               {/* STEP 1 — Create account */}
-              {talentStep === 1 && (
+              {talentStep === 1 && !signupSuccess && (
                 <Card className="shadow-elegant bg-card">
                   <CardContent className="p-8 space-y-6">
                     <div className="text-center">
                       <h2 className="text-2xl font-bold text-foreground">Créer mon compte</h2>
                     </div>
                     <form onSubmit={handleStep1Submit} className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="firstName" className="text-foreground">Prénom</Label>
+                          <Input id="firstName" required value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Votre prénom" className="shadow-card" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="lastName" className="text-foreground">Nom</Label>
+                          <Input id="lastName" required value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Votre nom" className="shadow-card" />
+                        </div>
+                      </div>
                       <div className="space-y-2">
                         <Label htmlFor="email" className="text-foreground">Adresse email</Label>
                         <Input
@@ -393,7 +403,9 @@ const SignUp = () => {
                         </div>
                         <FormFieldError error={step1Validation.getError("confirmPassword")} />
                       </div>
-                      <Button type="submit" variant="hero" className="w-full">Continuer</Button>
+                      <Button type="submit" variant="hero" className="w-full" disabled={isSubmitting}>
+                        {isSubmitting ? "Inscription..." : "Créer mon compte"}
+                      </Button>
                     </form>
                     <p className="text-center text-sm text-muted-foreground">
                       Vous avez déjà un compte ?{" "}
@@ -401,6 +413,28 @@ const SignUp = () => {
                     </p>
                   </CardContent>
                 </Card>
+              )}
+
+              {/* Email confirmation message */}
+              {talentStep === 1 && signupSuccess && (
+                <Card className="shadow-elegant bg-card">
+                  <CardContent className="p-8 space-y-6 text-center">
+                    <div className="flex justify-center">
+                      <div className="p-4 bg-primary/10 rounded-full">
+                        <CheckCircle className="h-12 w-12 text-primary" />
+                      </div>
+                    </div>
+                    <h2 className="text-2xl font-bold text-foreground">Vérifiez votre email</h2>
+                    <p className="text-muted-foreground">
+                      Un email de confirmation a été envoyé à <strong>{email}</strong>. 
+                      Cliquez sur le lien dans l'email pour activer votre compte.
+                    </p>
+                    <Button variant="outline" asChild>
+                      <Link to="/login">Aller à la connexion</Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
               )}
 
               {/* STEP 2 — Profile */}
