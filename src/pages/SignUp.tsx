@@ -70,69 +70,67 @@ const SignUp = () => {
 
   const validateProducerField = useCallback((name: string, value: string) => {
     switch (name) {
-      case "companyName": return validateRequired(value, "Le nom de l'entreprise");
-      case "contactName": return validateRequired(value, "Le nom du contact");
+      case "fullName": return validateRequired(value, "Le prénom et nom");
       case "email": return validateEmail(value);
       case "phone": return validatePhone(value);
-      case "password": return validatePassword(value);
-      case "confirmPassword": return validateConfirmPassword(producerFormData.password, value);
+      case "companyName": return validateRequired(value, "Le nom de la société");
       default: return "";
     }
-  }, [producerFormData.password]);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
      
-    const formData = accountType === 'talent' ? talentFormData : producerFormData;
-    const validation = accountType === 'talent' ? talentValidation : producerValidation;
-    const validateField = accountType === 'talent' ? validateTalentField : validateProducerField;
-
-    // Validate all fields
-    const fieldsToValidate = accountType === 'talent'
-      ? ["firstName", "lastName", "email", "password", "confirmPassword"]
-      : ["companyName", "contactName", "email", "password", "confirmPassword"];
-    
-    let hasError = false;
-    for (const field of fieldsToValidate) {
-      const error = validateField(field, (formData as any)[field]);
-      validation.setFieldError(field, error);
-      validation.markTouched(field);
-      if (error) hasError = true;
+    if (accountType === 'talent') {
+      const fieldsToValidate = ["firstName", "lastName", "email", "password", "confirmPassword"];
+      let hasError = false;
+      for (const field of fieldsToValidate) {
+        const error = validateTalentField(field, (talentFormData as any)[field]);
+        talentValidation.setFieldError(field, error);
+        talentValidation.markTouched(field);
+        if (error) hasError = true;
+      }
+      if (hasError) {
+        toast({ title: "Erreur", description: "Veuillez corriger les erreurs du formulaire", variant: "destructive" });
+        return;
+      }
+      const name = `${talentFormData.firstName} ${talentFormData.lastName}`;
+      signup(talentFormData.email, talentFormData.password, name, accountType);
+      if (redirectAfterAuth) {
+        toast({ title: "Compte créé avec succès !", description: "Bienvenue sur Tunisia Casting en tant que Talent" });
+        const redirect = redirectAfterAuth;
+        setRedirectAfterAuth(null);
+        navigate(redirect);
+      } else {
+        setWelcomeName(talentFormData.firstName);
+        setShowWelcomeOverlay(true);
+        setTimeout(() => { navigate('/onboarding'); }, 1400);
+      }
+      return;
     }
 
+    // Producer request form
+    const fieldsToValidate = ["fullName", "email", "phone", "companyName"];
+    let hasError = false;
+    for (const field of fieldsToValidate) {
+      const error = validateProducerField(field, (producerFormData as any)[field]);
+      producerValidation.setFieldError(field, error);
+      producerValidation.markTouched(field);
+      if (error) hasError = true;
+    }
+    if (!producerFormData.certifyInfo) {
+      toast({ title: "Erreur", description: "Veuillez certifier que les informations sont exactes", variant: "destructive" });
+      return;
+    }
+    if (!producerFormData.productionType) {
+      toast({ title: "Erreur", description: "Veuillez sélectionner un type de production", variant: "destructive" });
+      return;
+    }
     if (hasError) {
       toast({ title: "Erreur", description: "Veuillez corriger les erreurs du formulaire", variant: "destructive" });
       return;
     }
-
-    const name = accountType === 'talent' 
-      ? `${talentFormData.firstName} ${talentFormData.lastName}`
-      : producerFormData.contactName;
-     
-    signup(formData.email, formData.password, name, accountType);
-     
-    if (redirectAfterAuth) {
-      toast({
-        title: "Compte créé avec succès !",
-        description: `Bienvenue sur Tunisia Casting en tant que ${accountType === 'talent' ? 'Talent' : 'Producteur'}`,
-      });
-      const redirect = redirectAfterAuth;
-      setRedirectAfterAuth(null);
-      navigate(redirect);
-    } else if (accountType === 'talent') {
-      // Show welcome overlay then navigate to onboarding
-      setWelcomeName(talentFormData.firstName);
-      setShowWelcomeOverlay(true);
-      setTimeout(() => {
-        navigate('/onboarding');
-      }, 1400);
-    } else {
-      toast({
-        title: "Compte créé avec succès !",
-        description: `Bienvenue sur Tunisia Casting en tant que Producteur`,
-      });
-      navigate('/producer-dashboard');
-    }
+    setRequestSubmitted(true);
   };
 
   const handleTalentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -142,7 +140,6 @@ const SignUp = () => {
     if (talentValidation.isTouched(name) && type !== "checkbox") {
       talentValidation.setFieldError(name, validateTalentField(name, value));
     }
-    // Re-validate confirmPassword when password changes
     if (name === "password" && talentValidation.isTouched("confirmPassword")) {
       talentValidation.setFieldError("confirmPassword", validateConfirmPassword(value, talentFormData.confirmPassword));
     }
@@ -154,19 +151,15 @@ const SignUp = () => {
     talentValidation.setFieldError(name, validateTalentField(name, value));
   };
 
-  const handleProducerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, type, checked, value } = e.target;
-    const newValue = type === "checkbox" ? checked : value;
-    setProducerFormData({ ...producerFormData, [name]: newValue });
-    if (producerValidation.isTouched(name) && type !== "checkbox") {
+  const handleProducerChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setProducerFormData({ ...producerFormData, [name]: value });
+    if (producerValidation.isTouched(name)) {
       producerValidation.setFieldError(name, validateProducerField(name, value));
-    }
-    if (name === "password" && producerValidation.isTouched("confirmPassword")) {
-      producerValidation.setFieldError("confirmPassword", validateConfirmPassword(value, producerFormData.confirmPassword));
     }
   };
 
-  const handleProducerBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+  const handleProducerBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     producerValidation.markTouched(name);
     producerValidation.setFieldError(name, validateProducerField(name, value));
