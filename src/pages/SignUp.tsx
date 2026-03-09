@@ -16,7 +16,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useFormValidation, validateEmail, validatePassword, validateConfirmPassword, validateRequired, validatePhone } from "@/hooks/useFormValidation";
 import FormFieldError from "@/components/FormFieldError";
 import PasswordStrengthBar from "@/components/PasswordStrengthBar";
-import Layout from "@/components/Layout";
 
 type AccountType = 'talent' | 'producer' | null;
 
