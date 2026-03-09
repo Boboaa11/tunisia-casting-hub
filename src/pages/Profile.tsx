@@ -196,6 +196,7 @@ const Profile = () => {
 
     setProfile((prev) => ({ ...prev, photoUrl }));
     toast({ title: "Photo mise à jour", description: "Votre photo de profil a été mise à jour." });
+    await refreshUser();
   };
 
   const handleSave = async () => {
