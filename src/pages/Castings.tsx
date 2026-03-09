@@ -7,9 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { Search, MapPin, Calendar, Film, Tv, Theater, Clock, DollarSign, Star, Users, ChevronRight, User } from "lucide-react";
 import Layout from "@/components/Layout";
 import { useCasting, Casting, CastingRole } from "@/contexts/CastingContext";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, getProfileCompletion } from "@/contexts/AuthContext";
 import CastingApplicationDialog from "@/components/CastingApplicationDialog";
 import CastingDetailPanel from "@/components/CastingDetailPanel";
+import ProfileCompletionBanner from "@/components/ProfileCompletionBanner";
+import ProfileGateModal from "@/components/ProfileGateModal";
+import SubscriptionGateModal from "@/components/SubscriptionGateModal";
 
 const Castings = () => {
   const navigate = useNavigate();
@@ -23,6 +26,10 @@ const Castings = () => {
   const [applicationDialogOpen, setApplicationDialogOpen] = useState(false);
   const [selectedCasting, setSelectedCasting] = useState<Casting | null>(null);
   const [selectedRole, setSelectedRole] = useState<CastingRole | null>(null);
+  const [profileGateOpen, setProfileGateOpen] = useState(false);
+  const [subscriptionGateOpen, setSubscriptionGateOpen] = useState(false);
+
+  const { percentage: profilePercentage, items: profileItems } = getProfileCompletion(user);
 
   useEffect(() => {
     const applyId = searchParams.get('apply');
@@ -69,10 +76,22 @@ const Castings = () => {
       return;
     }
     if (user?.role !== 'talent') return;
-    if (!user?.hasSubscription) {
-      navigate(`/subscription?message=subscription_required&castingId=${casting.id}`);
+
+    // Gate 1: Profile completion
+    if (profilePercentage < 90) {
+      setProfileGateOpen(true);
       return;
     }
+
+    // Gate 2: Subscription
+    if (!user?.hasSubscription) {
+      setSelectedCasting(casting);
+      setSelectedRole(role);
+      setSubscriptionGateOpen(true);
+      return;
+    }
+
+    // Gate 3: Open application
     setSelectedCasting(casting);
     setSelectedRole(role);
     setApplicationDialogOpen(true);
@@ -109,6 +128,8 @@ const Castings = () => {
     <Layout>
       <div className="min-h-screen bg-[hsl(40_10%_96%)] py-8">
         <div className="max-w-[900px] mx-auto px-4">
+          <ProfileCompletionBanner />
+
           {/* Search and Filters */}
           <div className="mb-8 animate-slide-up">
             <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -304,6 +325,18 @@ const Castings = () => {
         role={selectedRole}
         open={applicationDialogOpen}
         onOpenChange={setApplicationDialogOpen}
+      />
+
+      <ProfileGateModal
+        open={profileGateOpen}
+        onOpenChange={setProfileGateOpen}
+        percentage={profilePercentage}
+        items={profileItems}
+      />
+
+      <SubscriptionGateModal
+        open={subscriptionGateOpen}
+        onOpenChange={setSubscriptionGateOpen}
       />
 
       <CastingDetailPanel
