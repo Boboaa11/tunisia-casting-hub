@@ -47,6 +47,8 @@ const App = () => (
               <Route path="/contact" element={<Contact />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<SignUp />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/producer-dashboard" element={<ProducerDashboard />} />
               <Route path="/create-casting" element={<CreateCasting />} />
               <Route path="/my-applications" element={<MyApplications />} />
