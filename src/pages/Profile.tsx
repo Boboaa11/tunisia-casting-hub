@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Camera, Upload, Star, Eye, MessageCircle, Calendar, ArrowLeft } from "lucide-react";
+import { Camera, Upload, Eye, Calendar, ArrowLeft, BookOpen } from "lucide-react";
 import ProfileViewMode from "@/components/ProfileViewMode";
 
 const Profile = () => {
@@ -21,7 +21,6 @@ const Profile = () => {
     phone: "+216 98 123 456",
     dateOfBirth: "1995-05-15",
     city: "Tunis",
-    address: "Rue de la République, La Marsa",
     bio: "Actrice passionnée avec 5 ans d'expérience dans le théâtre et le cinéma. Spécialisée dans les rôles dramatiques et comiques.",
     talentType: "Acteur/Actrice",
     experience: "Intermédiaire",
@@ -30,22 +29,35 @@ const Profile = () => {
     eyeColor: "Marron",
     hairColor: "Brun",
     languages: "Arabe, Français, Anglais",
-    skills: "Théâtre, Improvisation, Danse, Chant"
+    skills: "Théâtre, Improvisation, Danse, Chant",
+    bookUrl: ""
   });
 
   const [stats] = useState({
     profileViews: 1247,
-    applications: 15,
-    responses: 8,
-    rating: 4.8
+    applications: 15
   });
 
   const handleInputChange = (field: string, value: string) => {
     setProfile(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleBookUpload = () => {
+    // Simulate book upload — in production this would upload to storage
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/pdf';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const url = URL.createObjectURL(file);
+        setProfile(prev => ({ ...prev, bookUrl: url }));
+      }
+    };
+    input.click();
+  };
+
   const handleSave = () => {
-    // Here you would save to your backend
     console.log("Saving profile:", profile);
   };
 
@@ -103,14 +115,6 @@ const Profile = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Évaluation</span>
-                  <div className="flex items-center space-x-1">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span className="font-semibold">{stats.rating}</span>
-                  </div>
-                </div>
-                
                 <div className="grid grid-cols-2 gap-4 text-center">
                   <div>
                     <div className="text-2xl font-bold text-primary">{stats.profileViews}</div>
@@ -122,10 +126,23 @@ const Profile = () => {
                   </div>
                 </div>
 
-                <Button className="w-full" variant="outline">
-                  <Upload className="h-4 w-4 mr-2" />
-                  Télécharger CV
-                </Button>
+                {profile.bookUrl ? (
+                  <div className="space-y-2">
+                    <Button className="w-full" variant="outline" onClick={() => window.open(profile.bookUrl, '_blank')}>
+                      <BookOpen className="h-4 w-4 mr-2" />
+                      Voir le Book
+                    </Button>
+                    <Button className="w-full" variant="ghost" onClick={handleBookUpload}>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Remplacer le Book
+                    </Button>
+                  </div>
+                ) : (
+                  <Button className="w-full" variant="outline" onClick={handleBookUpload}>
+                    <Upload className="h-4 w-4 mr-2" />
+                    Ajouter un Book
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -207,15 +224,6 @@ const Profile = () => {
                         </SelectContent>
                       </Select>
                     </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="address">Adresse</Label>
-                    <Input
-                      id="address"
-                      value={profile.address}
-                      onChange={(e) => handleInputChange('address', e.target.value)}
-                    />
                   </div>
                 </TabsContent>
 
@@ -356,7 +364,7 @@ const Profile = () => {
                 </TabsContent>
 
                 <div className="flex justify-end space-x-2 mt-6">
-                  <Button variant="outline">Annuler</Button>
+                  <Button variant="outline" onClick={() => setIsEditing(false)}>Annuler</Button>
                   <Button onClick={handleSave}>Sauvegarder</Button>
                 </div>
               </CardContent>

@@ -3,7 +3,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
-  Star, 
   Eye, 
   FileText, 
   MapPin, 
@@ -13,7 +12,8 @@ import {
   Ruler,
   Weight,
   Palette,
-  Pencil
+  Pencil,
+  BookOpen
 } from "lucide-react";
 
 interface ProfileData {
@@ -23,7 +23,6 @@ interface ProfileData {
   phone: string;
   dateOfBirth: string;
   city: string;
-  address: string;
   bio: string;
   talentType: string;
   experience: string;
@@ -33,13 +32,12 @@ interface ProfileData {
   hairColor: string;
   languages: string;
   skills: string;
+  bookUrl?: string;
 }
 
 interface ProfileStats {
   profileViews: number;
   applications: number;
-  responses: number;
-  rating: number;
 }
 
 interface ProfileViewModeProps {
@@ -48,9 +46,22 @@ interface ProfileViewModeProps {
   onEdit: () => void;
 }
 
+const calculateAge = (dateOfBirth: string): number | null => {
+  if (!dateOfBirth) return null;
+  const birth = new Date(dateOfBirth);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age;
+};
+
 const ProfileViewMode = ({ profile, stats, onEdit }: ProfileViewModeProps) => {
   const languagesList = profile.languages.split(",").map(l => l.trim()).filter(Boolean);
   const skillsList = profile.skills.split(",").map(s => s.trim()).filter(Boolean);
+  const age = calculateAge(profile.dateOfBirth);
 
   return (
     <div className="space-y-6">
@@ -81,6 +92,12 @@ const ProfileViewMode = ({ profile, stats, onEdit }: ProfileViewModeProps) => {
                       <MapPin className="h-4 w-4" />
                       {profile.city}
                     </span>
+                    {age !== null && (
+                      <span className="flex items-center gap-1">
+                        <Calendar className="h-4 w-4" />
+                        {age} ans
+                      </span>
+                    )}
                     <span className="flex items-center gap-1">
                       <Mail className="h-4 w-4" />
                       {profile.email}
@@ -103,14 +120,7 @@ const ProfileViewMode = ({ profile, stats, onEdit }: ProfileViewModeProps) => {
       </Card>
 
       {/* Stats Bar */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="text-center p-4">
-          <div className="flex items-center justify-center gap-2 text-primary mb-1">
-            <Star className="h-5 w-5 fill-current" />
-            <span className="text-2xl font-bold">{stats.rating}</span>
-          </div>
-          <p className="text-sm text-muted-foreground">Évaluation</p>
-        </Card>
+      <div className="grid grid-cols-2 gap-4">
         <Card className="text-center p-4">
           <div className="flex items-center justify-center gap-2 text-primary mb-1">
             <Eye className="h-5 w-5" />
@@ -124,13 +134,6 @@ const ProfileViewMode = ({ profile, stats, onEdit }: ProfileViewModeProps) => {
             <span className="text-2xl font-bold">{stats.applications}</span>
           </div>
           <p className="text-sm text-muted-foreground">Candidatures</p>
-        </Card>
-        <Card className="text-center p-4">
-          <div className="flex items-center justify-center gap-2 text-primary mb-1">
-            <Calendar className="h-5 w-5" />
-            <span className="text-2xl font-bold">{stats.responses}</span>
-          </div>
-          <p className="text-sm text-muted-foreground">Réponses</p>
         </Card>
       </div>
 
@@ -193,7 +196,7 @@ const ProfileViewMode = ({ profile, stats, onEdit }: ProfileViewModeProps) => {
           </Card>
         </div>
 
-        {/* Sidebar - Physical Characteristics */}
+        {/* Sidebar */}
         <div className="space-y-6">
           <Card>
             <CardContent className="pt-6">
@@ -239,14 +242,24 @@ const ProfileViewMode = ({ profile, stats, onEdit }: ProfileViewModeProps) => {
             </CardContent>
           </Card>
 
+          {/* Book / Contact */}
           <Card>
             <CardContent className="pt-6">
               <h2 className="text-xl font-semibold mb-4">Contact</h2>
               <div className="space-y-3 text-sm">
-                <p className="text-muted-foreground">{profile.address}</p>
                 <p className="text-muted-foreground">{profile.email}</p>
                 <p className="text-muted-foreground">{profile.phone}</p>
               </div>
+              {profile.bookUrl && (
+                <Button 
+                  variant="outline" 
+                  className="w-full mt-4"
+                  onClick={() => window.open(profile.bookUrl, '_blank')}
+                >
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  Voir le Book
+                </Button>
+              )}
             </CardContent>
           </Card>
         </div>
