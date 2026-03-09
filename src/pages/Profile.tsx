@@ -246,6 +246,7 @@ const Profile = () => {
 
     toast({ title: "Profil sauvegardé", description: "Vos modifications ont été enregistrées." });
     setIsEditing(false);
+    await refreshUser();
   };
 
   if (authLoading || isLoading) {
