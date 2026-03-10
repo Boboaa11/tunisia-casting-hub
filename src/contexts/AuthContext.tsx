@@ -156,6 +156,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (existingSession?.user) {
         const profile = await fetchUserProfile(existingSession.user);
         setUser(profile);
+        checkOnboardingStatus(profile);
       }
       setIsLoading(false);
     });
