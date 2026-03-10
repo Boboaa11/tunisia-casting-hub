@@ -146,8 +146,17 @@ const SignUp = () => {
       toast({ title: "Erreur d'inscription", description: result.error, variant: "destructive" });
       return;
     }
-    setSignupSuccess(true);
-    toast({ title: "Inscription réussie !", description: "Vérifiez votre email pour confirmer votre compte." });
+    // Check if user was auto-confirmed (session exists immediately)
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      // Auto-confirmed: go directly to onboarding
+      toast({ title: "Inscription réussie !", description: "Bienvenue sur Tunisia Casting." });
+      navigate('/onboarding');
+    } else {
+      // Email confirmation required
+      setSignupSuccess(true);
+      toast({ title: "Inscription réussie !", description: "Vérifiez votre email pour confirmer votre compte." });
+    }
   };
 
   // Step 2 continue
