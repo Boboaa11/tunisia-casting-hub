@@ -141,6 +141,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setTimeout(async () => {
           const profile = await fetchUserProfile(newSession.user);
           setUser(profile);
+          checkOnboardingStatus(profile);
           setIsLoading(false);
         }, 0);
       } else {
