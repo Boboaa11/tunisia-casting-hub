@@ -122,6 +122,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [onboardingComplete, setOnboardingComplete] = useState(true);
   const [redirectAfterAuth, setRedirectAfterAuth] = useState<string | null>(null);
 
+  // Derive onboarding status from profile data
+  const checkOnboardingStatus = (profile: User) => {
+    // If user has talent role and hasn't filled basic profile info, onboarding is incomplete
+    if (profile.role === 'talent' && !profile.talentType && !profile.bio) {
+      setOnboardingComplete(false);
+    } else {
+      setOnboardingComplete(true);
+    }
+  };
+
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
